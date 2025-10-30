@@ -1,0 +1,29 @@
+# Python 缓存与虚拟环境
+__pycache__/
+.pytest_cache/
+.venv/
+
+# 数据与模型产物（保留占位符 .gitkeep）
+data/emoji_images/
+data/text_pairs/
+data/annotations/
+data/semantics/
+reports/
+models/
+checkpoints/
+
+# 允许保留空目录占位符（.gitkeep）
+!data/**/.gitkeep
+!reports/.gitkeep
+
+# IDE 与系统文件
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 日志与临时文件
+logs/
+*.log
+*.tmp
+*.swp

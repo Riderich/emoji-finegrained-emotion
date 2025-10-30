@@ -1,0 +1,29 @@
+# 核心深度学习与NLP
+torch>=2.2
+transformers>=4.44.0
+sentencepiece>=0.1.99
+
+# 计算机视觉与图像处理
+opencv-python>=4.9.0
+pillow>=10.0
+
+# 科学计算与数据处理
+numpy>=1.26
+pandas>=2.2
+scipy>=1.11
+scikit-learn>=1.3
+
+# 可视化
+matplotlib>=3.8
+seaborn>=0.12
+
+# 工具库
+tqdm>=4.66
+requests>=2.31
+beautifulsoup4>=4.12
+emoji>=2.10
+pyyaml>=6.0
+rich>=13.7
+
+# 统计学（ICC 与相关系数分析）
+pingouin>=0.5.4
