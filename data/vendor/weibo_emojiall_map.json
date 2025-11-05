@@ -1,0 +1,1018 @@
+[
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f618.png",
+    "name": "[爱你]",
+    "emoji": "😘",
+    "codepoints": [
+      "U+1F618"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%98",
+    "kind": "mapped",
+    "description": "face blowing a kiss",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f618png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f44b.png",
+    "name": "[拜拜]",
+    "emoji": "👋",
+    "codepoints": [
+      "U+1F44B"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%91%8B",
+    "kind": "mapped",
+    "description": "waving hand",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f44bpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f917.png",
+    "name": "[抱抱]",
+    "emoji": "🤗",
+    "codepoints": [
+      "U+1F917"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%97",
+    "kind": "mapped",
+    "description": "smiling face with open hands",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f917png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f625.png",
+    "name": "[悲伤]",
+    "emoji": "😥",
+    "codepoints": [
+      "U+1F625"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%A5",
+    "kind": "mapped",
+    "description": "sad but relieved face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f625png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f9d0.png",
+    "name": "[并不简单]",
+    "emoji": "🧐",
+    "codepoints": [
+      "U+1F9D0"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A7%90",
+    "kind": "mapped",
+    "description": "face with monocle",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f9d0png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f910.png",
+    "name": "[闭嘴]",
+    "emoji": "🤐",
+    "codepoints": [
+      "U+1F910"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%90",
+    "kind": "mapped",
+    "description": "zipper-mouth face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f910png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f60b.png",
+    "name": "[馋嘴]",
+    "emoji": "😋",
+    "codepoints": [
+      "U+1F60B"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%8B",
+    "kind": "mapped",
+    "description": "face savoring food",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f60bpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f349.png",
+    "name": "[吃瓜]",
+    "emoji": "🍉",
+    "codepoints": [
+      "U+1F349"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%8D%89",
+    "kind": "mapped",
+    "description": "watermelon",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f349png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f632.png",
+    "name": "[吃惊]",
+    "emoji": "😲",
+    "codepoints": [
+      "U+1F632"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%B2",
+    "kind": "mapped",
+    "description": "astonished face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f632png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f971.png",
+    "name": "[哈欠]",
+    "emoji": "🥱",
+    "codepoints": [
+      "U+1F971"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A5%B1",
+    "kind": "mapped",
+    "description": "yawning face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f971png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f915.png",
+    "name": "[打脸]",
+    "emoji": "🤕",
+    "codepoints": [
+      "U+1F915"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%95",
+    "kind": "mapped",
+    "description": "face with head-bandage",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f915png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f436.png",
+    "name": "[doge]",
+    "emoji": "🐶",
+    "codepoints": [
+      "U+1F436"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%90%B6",
+    "kind": "mapped",
+    "description": "dog face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f436png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f928.png",
+    "name": "[费解]",
+    "emoji": "🤨",
+    "codepoints": [
+      "U+1F928"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%A8",
+    "kind": "mapped",
+    "description": "face with raised eyebrow",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f928png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f9fc.png",
+    "name": "[肥皂]",
+    "emoji": "🧼",
+    "codepoints": [
+      "U+1F9FC"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A7%BC",
+    "kind": "mapped",
+    "description": "soap",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f9fcpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f637.png",
+    "name": "[感冒]",
+    "emoji": "😷",
+    "codepoints": [
+      "U+1F637"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%B7",
+    "kind": "mapped",
+    "description": "face with medical mask",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f637png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f9ce.png",
+    "name": "[跪了]",
+    "emoji": "🧎",
+    "codepoints": [
+      "U+1F9CE"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A7%8E",
+    "kind": "mapped",
+    "description": "person kneeling",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f9cepng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f44f.png",
+    "name": "[鼓掌]",
+    "emoji": "👏",
+    "codepoints": [
+      "U+1F44F"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%91%8F",
+    "kind": "mapped",
+    "description": "clapping hands",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f44fpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f603.png",
+    "name": "[哈哈]",
+    "emoji": "😃",
+    "codepoints": [
+      "U+1F603"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%83",
+    "kind": "mapped",
+    "description": "grinning face with big eyes",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f603png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f60a.png",
+    "name": "[害羞]",
+    "emoji": "😊",
+    "codepoints": [
+      "U+1F60A"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%8A",
+    "kind": "mapped",
+    "description": "smiling face with smiling eyes",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f60a-newpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f613.png",
+    "name": "[汗]",
+    "emoji": "😓",
+    "codepoints": [
+      "U+1F613"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%93",
+    "kind": "mapped",
+    "description": "downcast face with sweat",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f613png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f642.png",
+    "name": "[呵呵]",
+    "emoji": "🙂",
+    "codepoints": [
+      "U+1F642"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%99%82",
+    "kind": "mapped",
+    "description": "slightly smiling face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f642png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f605.png",
+    "name": "[黑线]",
+    "emoji": "😅",
+    "codepoints": [
+      "U+1F605"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%85",
+    "kind": "mapped",
+    "description": "grinning face with sweat",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f605png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f612.png",
+    "name": "[哼]",
+    "emoji": "😒",
+    "codepoints": [
+      "U+1F612"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%92",
+    "kind": "mapped",
+    "description": "unamused face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f612png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f62c.png",
+    "name": "[坏笑]",
+    "emoji": "😬",
+    "codepoints": [
+      "U+1F62C"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%AC",
+    "kind": "mapped",
+    "description": "grimacing face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f62cpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f60d.png",
+    "name": "[花心]",
+    "emoji": "😍",
+    "codepoints": [
+      "U+1F60D"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%8D",
+    "kind": "mapped",
+    "description": "smiling face with heart-eyes",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f60dpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f61c.png",
+    "name": "[挤眼]",
+    "emoji": "😜",
+    "codepoints": [
+      "U+1F61C"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%9C",
+    "kind": "mapped",
+    "description": "winking face with tongue",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f61cpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f60a-new.png",
+    "name": "[可爱]",
+    "emoji": "😊",
+    "codepoints": [
+      "U+1F60A"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%8A",
+    "kind": "mapped",
+    "description": "smiling face with smiling eyes",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f60a-newpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f964.png",
+    "name": "[可乐]",
+    "emoji": "🥤",
+    "codepoints": [
+      "U+1F964"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A5%A4",
+    "kind": "mapped",
+    "description": "cup with straw",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f964png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f97a.png",
+    "name": "[可怜]",
+    "emoji": "🥺",
+    "codepoints": [
+      "U+1F97A"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A5%BA",
+    "kind": "mapped",
+    "description": "pleading face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f97apng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f60e.png",
+    "name": "[酷]",
+    "emoji": "😎",
+    "codepoints": [
+      "U+1F60E"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%8E",
+    "kind": "mapped",
+    "description": "smiling face with sunglasses",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f60epng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f480.png",
+    "name": "[骷髅]",
+    "emoji": "💀",
+    "codepoints": [
+      "U+1F480"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%92%80",
+    "kind": "mapped",
+    "description": "skull",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f480png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f614.png",
+    "name": "[困]",
+    "emoji": "😔",
+    "codepoints": [
+      "U+1F614"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%94",
+    "kind": "mapped",
+    "description": "pensive face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f614-newpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f644.png",
+    "name": "[白眼]",
+    "emoji": "🙄",
+    "codepoints": [
+      "U+1F644"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%99%84",
+    "kind": "mapped",
+    "description": "face with rolling eyes",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f644png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f62d.png",
+    "name": "[泪]",
+    "emoji": "😭",
+    "codepoints": [
+      "U+1F62D"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%AD",
+    "kind": "mapped",
+    "description": "loudly crying face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f62dpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f63c.png",
+    "name": "[喵]",
+    "emoji": "😼",
+    "codepoints": [
+      "U+1F63C"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%BC",
+    "kind": "mapped",
+    "description": "cat with wry smile",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f63cpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f935.png",
+    "name": "[男孩儿]",
+    "emoji": "🤵",
+    "codepoints": [
+      "U+1F935"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%B5",
+    "kind": "mapped",
+    "description": "person in tuxedo",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f935png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f621.png",
+    "name": "[怒]",
+    "emoji": "😡",
+    "codepoints": [
+      "U+1F621"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%A1",
+    "kind": "mapped",
+    "description": "enraged face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f621png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f92c.png",
+    "name": "[怒骂]",
+    "emoji": "🤬",
+    "codepoints": [
+      "U+1F92C"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%AC",
+    "kind": "mapped",
+    "description": "face with symbols on mouth",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f92cpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f470.png",
+    "name": "[女孩儿]",
+    "emoji": "👰",
+    "codepoints": [
+      "U+1F470"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%91%B0",
+    "kind": "mapped",
+    "description": "person with veil",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f470png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f911.png",
+    "name": "[钱]",
+    "emoji": "🤑",
+    "codepoints": [
+      "U+1F911"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%91",
+    "kind": "mapped",
+    "description": "money-mouth face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f911png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f619.png",
+    "name": "[亲亲]",
+    "emoji": "😙",
+    "codepoints": [
+      "U+1F619"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%99",
+    "kind": "mapped",
+    "description": "kissing face with smiling eyes",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f619png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f633.png",
+    "name": "[傻眼]",
+    "emoji": "😳",
+    "codepoints": [
+      "U+1F633"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%B3",
+    "kind": "mapped",
+    "description": "flushed face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f633png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f912.png",
+    "name": "[生病]",
+    "emoji": "🤒",
+    "codepoints": [
+      "U+1F912"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%92",
+    "kind": "mapped",
+    "description": "face with thermometer",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f912png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f999.png",
+    "name": "[神兽]",
+    "emoji": "🦙",
+    "codepoints": [
+      "U+1F999"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A6%99",
+    "kind": "mapped",
+    "description": "llama",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f999png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f614-new.png",
+    "name": "[失望]",
+    "emoji": "😔",
+    "codepoints": [
+      "U+1F614"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%94",
+    "kind": "mapped",
+    "description": "pensive face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f614-newpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f622.png",
+    "name": "[衰]",
+    "emoji": "😢",
+    "codepoints": [
+      "U+1F622"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%A2",
+    "kind": "mapped",
+    "description": "crying face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f622png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f62a.png",
+    "name": "[睡觉]",
+    "emoji": "😪",
+    "codepoints": [
+      "U+1F62A"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%AA",
+    "kind": "mapped",
+    "description": "sleepy face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f62apng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f914.png",
+    "name": "[思考]",
+    "emoji": "🤔",
+    "codepoints": [
+      "U+1F914"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%94",
+    "kind": "mapped",
+    "description": "thinking face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f914png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f34b.png",
+    "name": "[酸]",
+    "emoji": "🍋",
+    "codepoints": [
+      "U+1F34B"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%8D%8B",
+    "kind": "mapped",
+    "description": "lemon",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f34bpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f604.png",
+    "name": "[太开心]",
+    "emoji": "😄",
+    "codepoints": [
+      "U+1F604"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%84",
+    "kind": "mapped",
+    "description": "grinning face with smiling eyes",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f604png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f937.png",
+    "name": "[摊手]",
+    "emoji": "🤷",
+    "codepoints": [
+      "U+1F937"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%B7",
+    "kind": "mapped",
+    "description": "person shrugging",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f937png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f61d.png",
+    "name": "[舔]",
+    "emoji": "😝",
+    "codepoints": [
+      "U+1F61D"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%9D",
+    "kind": "mapped",
+    "description": "squinting face with tongue",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f61dpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f92d.png",
+    "name": "[偷笑]",
+    "emoji": "🤭",
+    "codepoints": [
+      "U+1F92D"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%AD",
+    "kind": "mapped",
+    "description": "face with hand over mouth",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f92dpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f92e.png",
+    "name": "[吐]",
+    "emoji": "🤮",
+    "codepoints": [
+      "U+1F92E"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%AE",
+    "kind": "mapped",
+    "description": "face vomiting",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f92epng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f430.png",
+    "name": "[兔子]",
+    "emoji": "🐰",
+    "codepoints": [
+      "U+1F430"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%90%B0",
+    "kind": "mapped",
+    "description": "rabbit face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f430png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f641.png",
+    "name": "[委屈]",
+    "emoji": "🙁",
+    "codepoints": [
+      "U+1F641"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%99%81",
+    "kind": "mapped",
+    "description": "slightly frowning face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f641png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f648.png",
+    "name": "[捂]",
+    "emoji": "🙈",
+    "codepoints": [
+      "U+1F648"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%99%88",
+    "kind": "mapped",
+    "description": "see-no-evil monkey",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f648png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f602.png",
+    "name": "[笑哭]",
+    "emoji": "😂",
+    "codepoints": [
+      "U+1F602"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%82",
+    "kind": "mapped",
+    "description": "face with tears of joy",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f602png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f929.png",
+    "name": "[憧憬]",
+    "emoji": "🤩",
+    "codepoints": [
+      "U+1F929"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%A9",
+    "kind": "mapped",
+    "description": "star-struck",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f929png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f43c.png",
+    "name": "[熊猫]",
+    "emoji": "🐼",
+    "codepoints": [
+      "U+1F43C"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%90%BC",
+    "kind": "mapped",
+    "description": "panda",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f43cpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f601.png",
+    "name": "[嘻嘻]",
+    "emoji": "😁",
+    "codepoints": [
+      "U+1F601"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%81",
+    "kind": "mapped",
+    "description": "beaming face with smiling eyes",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f601png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f92b.png",
+    "name": "[嘘]",
+    "emoji": "🤫",
+    "codepoints": [
+      "U+1F92B"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%A4%AB",
+    "kind": "mapped",
+    "description": "shushing face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f92bpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f60f.png",
+    "name": "[阴险]",
+    "emoji": "😏",
+    "codepoints": [
+      "U+1F60F"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%8F",
+    "kind": "mapped",
+    "description": "smirking face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f60fpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f624.png",
+    "name": "[右哼哼]",
+    "emoji": "😤",
+    "codepoints": [
+      "U+1F624"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%A4",
+    "kind": "mapped",
+    "description": "face with steam from nose",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f624-newpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f635.png",
+    "name": "[晕]",
+    "emoji": "😵",
+    "codepoints": [
+      "U+1F635"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%B5",
+    "kind": "mapped",
+    "description": "face with crossed-out eyes",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f635png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f62b.png",
+    "name": "[抓狂]",
+    "emoji": "😫",
+    "codepoints": [
+      "U+1F62B"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%AB",
+    "kind": "mapped",
+    "description": "tired face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f62bpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f437.png",
+    "name": "[猪头]",
+    "emoji": "🐷",
+    "codepoints": [
+      "U+1F437"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%90%B7",
+    "kind": "mapped",
+    "description": "pig face",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f437png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/1f624-new.png",
+    "name": "[左哼哼]",
+    "emoji": "😤",
+    "codepoints": [
+      "U+1F624"
+    ],
+    "detail_url": "https://www.emojiall.com/en/emoji/%F0%9F%98%A4",
+    "kind": "mapped",
+    "description": "face with steam from nose",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo\\1f624-newpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_aoteman.png",
+    "name": "[奥特曼]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_aotemanpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_awsl.png",
+    "name": "[awsl]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_awslpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_bishi.png",
+    "name": "[鄙视]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_bishipng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_dacall.png",
+    "name": "[打call]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_dacallpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_ding.png",
+    "name": "[顶]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_dingpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_erha.png",
+    "name": "[二哈]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_erhapng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_heiheihei.png",
+    "name": "[笑而不语]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_heiheiheipng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_lang.png",
+    "name": "[浪]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_langpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_qiurao.png",
+    "name": "[求饶]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_qiuraopng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_wabishi.png",
+    "name": "[挖鼻]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_wabishipng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_yiwen.png",
+    "name": "[疑问]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_yiwenpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_yunbei.png",
+    "name": "[允悲]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_yunbeipng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/d_zuiyou.png",
+    "name": "[最右]",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\d_zuiyoupng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/f_geili.png",
+    "name": "",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\f_geilipng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/f_hufen.png",
+    "name": "",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\f_hufenpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/f_v5.png",
+    "name": "",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\f_v5png.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/h_lai.png",
+    "name": "",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\h_laipng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/h_zan.png",
+    "name": "",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\h_zanpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/vvs_icon_liked.png",
+    "name": "",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\vvs_icon_likedpng.png"
+  },
+  {
+    "img_url": "https://www.emojiall.com/images/60/weibo/w_shachenbao.png",
+    "name": "",
+    "emoji": "",
+    "codepoints": [],
+    "detail_url": null,
+    "kind": "vendor_only",
+    "description": "None",
+    "image_path": "E:\\OneDrive - The Chinese University of Hong Kong\\College\\Course Content\\y3\\AIST4010\\project\\emoji-finegrained-emotion\\data\\emoji_images\\weibo_unmapped\\w_shachenbaopng.png"
+  }
+]
