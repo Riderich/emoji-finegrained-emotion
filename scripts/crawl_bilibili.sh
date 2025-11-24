@@ -27,13 +27,13 @@ EMOJI_MAP="${REPO_ROOT}/data/vendor/bilibili_emojiall_map.json"
 FETCH_MODE="popular"
 FETCH_MAX_PAGES=5        # search: 每关键词页数；popular: 热门榜页数
 FETCH_ORDER="pubdate"    # 仅在search模式下生效：pubdate/view
-FETCH_SLEEP=1.2          # 获取阶段请求间歇秒数（内部含随机抖动，建议≥1.0）
+FETCH_SLEEP=0.8          # 获取阶段请求间歇秒数（含随机抖动，建议≥0.6；过低易限流）
 FETCH_MIN_REPLY=0        # 按评论数过滤（>=该值保留；0表示不过滤）
 FETCH_PS=20              # popular模式每页数量
 
 # 中文说明：默认抓取页数上限为 800；遇到 -400（max offset exceeded）时提前停止该BV
 CRAWL_MAX_PAGES=800      # 每个BV抓取评论页数上限（推荐：800页）
-CRAWL_SLEEP=1.6          # 评论抓取分页间歇秒数（含随机抖动，建议≥1.2）
+CRAWL_SLEEP=0.8          # 评论抓取分页间歇秒数（含随机抖动，建议≥0.6；若频繁出现412/429，请调高）
 MIN_PER_BVID=500         # 每个BV至少写出N条（按你的设想：至少500条）
 
 # 中文说明：调试/诊断选项（可选）
