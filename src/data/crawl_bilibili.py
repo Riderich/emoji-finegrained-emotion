@@ -876,7 +876,7 @@ def main():
     parser.add_argument("--bvids-file", type=str, default="", help="BV 列表文件（CSV含bvid列，或TXT逐行一个BV）")
     parser.add_argument("--max-pages", type=int, default=3, help="每个 BV 抓取的评论页数上限")
     # 中文行间注释：新增分页请求间歇秒数（含随机抖动），避免限流
-    parser.add_argument("--sleep-seconds", type=float, default=1.2, help="分页间歇秒数（含随机抖动，建议≥1.2），避免限流")
+    parser.add_argument("--sleep-seconds", type=float, default=0.8, help="分页间歇秒数（含随机抖动，建议≥0.6），过低易触发限流")  # 中文行间注释：默认从 1.2s 下调到 0.8s，以加快抓取；如出现 412/429 可提高该值
     parser.add_argument("--output", type=str, default=os.path.join("data", "vendor", "crawl", "bilibili_emoji_sentences.csv"), help="输出 CSV 相对路径")
     parser.add_argument("--print-first-messages", type=int, default=0, help="打印首批评论文本条数（仅打印，不写CSV）")
     parser.add_argument("--sessdata", type=str, default=None, help="可选：B站登录态 SESSDATA，用于提升接口可访问性")

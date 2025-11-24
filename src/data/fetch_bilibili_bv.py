@@ -320,7 +320,7 @@ def main():
     # 中文说明：分页与节流
     parser.add_argument("--max-pages", type=int, default=5, help="分页页数上限（search为每关键词的页数；popular为热门榜页数）")
     parser.add_argument("--ps", type=int, default=20, help="popular模式每页数量（建议20）")
-    parser.add_argument("--sleep-seconds", type=float, default=1.2, help="分页请求间歇秒数（含随机抖动，建议≥1.0）")
+    parser.add_argument("--sleep-seconds", type=float, default=0.8, help="分页请求间歇秒数（含随机抖动，建议≥0.6；过低易限流）")  # 中文行间注释：默认从 1.2s 下调到 0.8s，若频繁失败请调回≥1.0
     parser.add_argument("--sessdata", type=str, default=None, help="可选：B站登录态 SESSDATA")
     # 中文说明：过滤条件
     parser.add_argument("--min-reply", type=int, default=0, help="按总评论数过滤（>=该值保留；0表示不过滤）")
