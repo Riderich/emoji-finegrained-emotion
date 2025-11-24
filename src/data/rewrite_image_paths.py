@@ -290,20 +290,29 @@ def main() -> None:
     args = parse_args()
     if not args.images_root:
         raise ValueError("--images_root is required (absolute base directory)")
+    # 中文说明：统一相对路径以仓库根解析，兼容跨平台分隔符
+    repo_root = Path(__file__).resolve().parents[2]
     images_root = Path(args.images_root)
     if not images_root.is_absolute():
-        # 中文说明：必须使用绝对路径，避免相对路径混淆
-        images_root = images_root.resolve()
+        images_root = (repo_root / images_root).resolve()
 
     if args.in_json:
         in_json = Path(args.in_json)
+        if not in_json.is_absolute():
+            in_json = (repo_root / in_json).resolve()
         out_json = Path(args.out_json) if args.out_json else in_json
+        if args.out_json and not out_json.is_absolute():
+            out_json = (repo_root / out_json).resolve()
         process_json(in_json, out_json, args.platform, images_root)
         print(f"[Rewrite] JSON written: {out_json}")
 
     if args.in_csv:
         in_csv = Path(args.in_csv)
+        if not in_csv.is_absolute():
+            in_csv = (repo_root / in_csv).resolve()
         out_csv = Path(args.out_csv) if args.out_csv else in_csv
+        if args.out_csv and not out_csv.is_absolute():
+            out_csv = (repo_root / out_csv).resolve()
         process_csv(in_csv, out_csv, args.platform, images_root)
         print(f"[Rewrite] CSV written: {out_csv}")
 

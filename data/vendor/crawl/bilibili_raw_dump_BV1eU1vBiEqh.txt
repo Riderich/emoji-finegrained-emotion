@@ -1,0 +1,124 @@
+=== Dump for BV=BV1eU1vBiEqh ===
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
+Referer: https://www.bilibili.com/
+SESSDATA present: False
+
+--- Page 1 via BV ---
+URL: https://api.bilibili.com/x/v2/reply?pn=1&type=1&oid=BV1eU1vBiEqh&sort=0
+Status: 200
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "page": {
+      "num": 0,
+      "size": 0,
+      "count": 0,
+      "acount": 0
+    },
+    "config": {
+      "showtopic": 0,
+      "show_up_flag": false,
+      "read_only": false
+    },
+    "replies": null,
+    "upper": {
+      "mid": 0,
+      "top": null,
+      "vote": null
+    },
+    "top": null,
+    "vote": 0,
+    "blacklist": 0,
+    "assist": 0,
+    "mode": 0,
+    "support_mode": null,
+    "control": {
+      "input_disable": false,
+      "root_input_text": "",
+      "child_input_text": "",
+      "giveup_input_text": "",
+      "screenshot_icon_state": 0,
+      "upload_picture_icon_state": 0,
+      "answer_guide_text": "",
+      "answer_guide_icon_url": "",
+      "answer_guide_ios_url": "",
+      "answer_guide_android_url": "",
+      "bg_text": "",
+      "empty_page": null,
+      "show_type": 0,
+      "show_text": "",
+      "web_selection": false,
+      "disable_jump_emote": false,
+      "enable_charged": false,
+      "enable_cm_biz_helper": false,
+      "preload_resources": null
+    },
+    "folder": {
+      "has_folded": false,
+      "is_folded": false,
+      "rule": ""
+    }
+  }
+}
+--- Page 1 via AID (115485312094409) ---
+URL: https://api.bilibili.com/x/v2/reply?pn=1&type=1&oid=115485312094409&sort=0
+Status: 200
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "page": {
+      "num": 0,
+      "size": 0,
+      "count": 0,
+      "acount": 0
+    },
+    "config": {
+      "showtopic": 0,
+      "show_up_flag": false,
+      "read_only": false
+    },
+    "replies": null,
+    "upper": {
+      "mid": 0,
+      "top": null,
+      "vote": null
+    },
+    "top": null,
+    "vote": 0,
+    "blacklist": 0,
+    "assist": 0,
+    "mode": 0,
+    "support_mode": null,
+    "control": {
+      "input_disable": false,
+      "root_input_text": "",
+      "child_input_text": "",
+      "giveup_input_text": "",
+      "screenshot_icon_state": 0,
+      "upload_picture_icon_state": 0,
+      "answer_guide_text": "",
+      "answer_guide_icon_url": "",
+      "answer_guide_ios_url": "",
+      "answer_guide_android_url": "",
+      "bg_text": "",
+      "empty_page": null,
+      "show_type": 0,
+      "show_text": "",
+      "web_selection": false,
+      "disable_jump_emote": false,
+      "enable_charged": false,
+      "enable_cm_biz_helper": false,
+      "preload_resources": null
+    },
+    "folder": {
+      "has_folded": false,
+      "is_folded": false,
+      "rule": ""
+    }
+  }
+}
+=== End of Dump ===

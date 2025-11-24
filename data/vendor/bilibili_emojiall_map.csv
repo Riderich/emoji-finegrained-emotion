@@ -1,81 +1,81 @@
-"emoji","codepoints","name","img_url","detail_url","kind","description","image_path"
-"😁","U+1F601","[呲牙]","https://www.emojiall.com/images/60/bilibili/1f601.png","https://www.emojiall.com/en/emoji/%F0%9F%98%81","mapped","beaming face with smiling eyes","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f601png.png"
-"👌","U+1F44C","[OK]","https://www.emojiall.com/images/60/bilibili/1f44c.png","https://www.emojiall.com/en/emoji/%F0%9F%91%8C","mapped","OK hand","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f44cpng.png"
-"🤩","U+1F929","[星星眼]","https://www.emojiall.com/images/60/bilibili/1f929.png","https://www.emojiall.com/en/emoji/%F0%9F%A4%A9","mapped","star-struck","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f929png.png"
-"😏","U+1F60F","[歪嘴]","https://www.emojiall.com/images/60/bilibili/1f60f.png","https://www.emojiall.com/en/emoji/%F0%9F%98%8F","mapped","smirking face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f60fpng.png"
-"😒","U+1F612","[嫌弃]","https://www.emojiall.com/images/60/bilibili/1f612.png","https://www.emojiall.com/en/emoji/%F0%9F%98%92","mapped","unamused face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f612png.png"
-"😍","U+1F60D","[喜欢]","https://www.emojiall.com/images/60/bilibili/1f60d.png","https://www.emojiall.com/en/emoji/%F0%9F%98%8D","mapped","smiling face with heart-eyes","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f60dpng.png"
-"🍋","U+1F34B","[酸了]","https://www.emojiall.com/images/60/bilibili/1f34b.png","https://www.emojiall.com/en/emoji/%F0%9F%8D%8B","mapped","lemon","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f34bpng.png"
-"😭","U+1F62D","[大哭]","https://www.emojiall.com/images/60/bilibili/1f62d.png","https://www.emojiall.com/en/emoji/%F0%9F%98%AD","mapped","loudly crying face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f62dpng.png"
-"😊","U+1F60A","[害羞]","https://www.emojiall.com/images/60/bilibili/1f60a.png","https://www.emojiall.com/en/emoji/%F0%9F%98%8A","mapped","smiling face with smiling eyes","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f60apng.png"
-"😛","U+1F61B","[调皮]","https://www.emojiall.com/images/60/bilibili/1f61b.png","https://www.emojiall.com/en/emoji/%F0%9F%98%9B","mapped","face with tongue","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f61bpng.png"
-"😂","U+1F602","[喜极而泣]","https://www.emojiall.com/images/60/bilibili/1f602.png","https://www.emojiall.com/en/emoji/%F0%9F%98%82","mapped","face with tears of joy","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f602png.png"
-"🙂","U+1F642","[笑]","https://www.emojiall.com/images/60/bilibili/1f642.png","https://www.emojiall.com/en/emoji/%F0%9F%99%82","mapped","slightly smiling face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f642png.png"
-"🤭","U+1F92D","[偷笑]","https://www.emojiall.com/images/60/bilibili/1f92d.png","https://www.emojiall.com/en/emoji/%F0%9F%A4%AD","mapped","face with hand over mouth","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f92dpng.png"
-"😄","U+1F604","[大笑]","https://www.emojiall.com/images/60/bilibili/1f604.png","https://www.emojiall.com/en/emoji/%F0%9F%98%84","mapped","grinning face with smiling eyes","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f604png.png"
-"🤦","U+1F926","[捂脸]","https://www.emojiall.com/images/60/bilibili/1f926.png","https://www.emojiall.com/en/emoji/%F0%9F%A4%A6","mapped","person facepalming","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f926png.png"
-"😳","U+1F633","[呆]","https://www.emojiall.com/images/60/bilibili/1f633.png","https://www.emojiall.com/en/emoji/%F0%9F%98%B3","mapped","flushed face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f633png.png"
-"😝","U+1F61D","[惊喜]","https://www.emojiall.com/images/60/bilibili/1f61d.png","https://www.emojiall.com/en/emoji/%F0%9F%98%9D","mapped","squinting face with tongue","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f61dpng.png"
-"😲","U+1F632","[惊讶]","https://www.emojiall.com/images/60/bilibili/1f632.png","https://www.emojiall.com/en/emoji/%F0%9F%98%B2","mapped","astonished face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f632png.png"
-"🐶","U+1F436","[doge]","https://www.emojiall.com/images/60/bilibili/1f436.png","https://www.emojiall.com/en/emoji/%F0%9F%90%B6","mapped","dog face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f436png.png"
-"🍉","U+1F349","[吃瓜]","https://www.emojiall.com/images/60/bilibili/1f349.png","https://www.emojiall.com/en/emoji/%F0%9F%8D%89","mapped","watermelon","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f349png.png"
-"🙌","U+1F64C","[打call]","https://www.emojiall.com/images/60/bilibili/1f64c.png","https://www.emojiall.com/en/emoji/%F0%9F%99%8C","mapped","raising hands","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f64cpng.png"
-"👏","U+1F44F","[鼓掌]","https://www.emojiall.com/images/60/bilibili/1f44f.png","https://www.emojiall.com/en/emoji/%F0%9F%91%8F","mapped","clapping hands","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f44fpng.png"
-"😑","U+1F611","[无语]","https://www.emojiall.com/images/60/bilibili/1f611.png","https://www.emojiall.com/en/emoji/%F0%9F%98%91","mapped","expressionless face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f611png.png"
-"🥶","U+1F976","[冷]","https://www.emojiall.com/images/60/bilibili/1f976.png","https://www.emojiall.com/en/emoji/%F0%9F%A5%B6","mapped","cold face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f976png.png"
-"👻","U+1F47B","[灵魂出窍]","https://www.emojiall.com/images/60/bilibili/1f47b.png","https://www.emojiall.com/en/emoji/%F0%9F%91%BB","mapped","ghost","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f47bpng.png"
-"😢","U+1F622","[委屈]","https://www.emojiall.com/images/60/bilibili/1f622.png","https://www.emojiall.com/en/emoji/%F0%9F%98%A2","mapped","crying face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f622png.png"
-"😱","U+1F631","[吓]","https://www.emojiall.com/images/60/bilibili/1f631.png","https://www.emojiall.com/en/emoji/%F0%9F%98%B1","mapped","face screaming in fear","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f631png.png"
-"🤒","U+1F912","[生病]","https://www.emojiall.com/images/60/bilibili/1f912.png","https://www.emojiall.com/en/emoji/%F0%9F%A4%92","mapped","face with thermometer","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f912png.png"
-"🤮","U+1F92E","[吐]","https://www.emojiall.com/images/60/bilibili/1f92e.png","https://www.emojiall.com/en/emoji/%F0%9F%A4%AE","mapped","face vomiting","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f92epng.png"
-"🤫","U+1F92B","[嘘声]","https://www.emojiall.com/images/60/bilibili/1f92b.png","https://www.emojiall.com/en/emoji/%F0%9F%A4%AB","mapped","shushing face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f92bpng.png"
-"🙈","U+1F648","[捂眼]","https://www.emojiall.com/images/60/bilibili/1f648.png","https://www.emojiall.com/en/emoji/%F0%9F%99%88","mapped","see-no-evil monkey","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f648png.png"
-"🤔","U+1F914","[思考]","https://www.emojiall.com/images/60/bilibili/1f914.png","https://www.emojiall.com/en/emoji/%F0%9F%A4%94","mapped","thinking face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f914png.png"
-"👋","U+1F44B","[再见]","https://www.emojiall.com/images/60/bilibili/1f44b.png","https://www.emojiall.com/en/emoji/%F0%9F%91%8B","mapped","waving hand","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f44bpng.png"
-"🙄","U+1F644","[翻白眼]","https://www.emojiall.com/images/60/bilibili/1f644.png","https://www.emojiall.com/en/emoji/%F0%9F%99%84","mapped","face with rolling eyes","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f644png.png"
-"🥱","U+1F971","[哈欠]","https://www.emojiall.com/images/60/bilibili/1f971.png","https://www.emojiall.com/en/emoji/%F0%9F%A5%B1","mapped","yawning face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f971png.png"
-"😎","U+1F60E","[墨镜]","https://www.emojiall.com/images/60/bilibili/1f60e.png","https://www.emojiall.com/en/emoji/%F0%9F%98%8E","mapped","smiling face with sunglasses","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f60epng.png"
-"🙁","U+1F641","[难过]","https://www.emojiall.com/images/60/bilibili/1f641.png","https://www.emojiall.com/en/emoji/%F0%9F%99%81","mapped","slightly frowning face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f641png.png"
-"😟","U+1F61F","[撇嘴]","https://www.emojiall.com/images/60/bilibili/1f61f.png","https://www.emojiall.com/en/emoji/%F0%9F%98%9F","mapped","worried face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f61fpng.png"
-"😫","U+1F62B","[抓狂]","https://www.emojiall.com/images/60/bilibili/1f62b.png","https://www.emojiall.com/en/emoji/%F0%9F%98%AB","mapped","tired face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f62bpng.png"
-"😡","U+1F621","[生气]","https://www.emojiall.com/images/60/bilibili/1f621.png","https://www.emojiall.com/en/emoji/%F0%9F%98%A1","mapped","enraged face","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f621png.png"
-"😷","U+1F637","[口罩]","https://www.emojiall.com/images/60/bilibili/1f637.png","https://www.emojiall.com/en/emoji/%F0%9F%98%B7","mapped","face with medical mask","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f637png.png"
-"🥮","U+1F96E","[月饼]","https://www.emojiall.com/images/60/bilibili/1f96e.png","https://www.emojiall.com/en/emoji/%F0%9F%A5%AE","mapped","moon cake","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f96epng.png"
-"🛰","U+1F6F0","[视频卫星]","https://www.emojiall.com/images/60/bilibili/1f6f0.png","https://www.emojiall.com/en/emoji/%F0%9F%9B%B0","mapped","satellite","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f6f0png.png"
-"📺","U+1F4FA","[11周年]","https://www.emojiall.com/images/60/bilibili/1f4fa.png","https://www.emojiall.com/en/emoji/%F0%9F%93%BA","mapped","television","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f4fapng.png"
-"🍗","U+1F357","[鸡腿]","https://www.emojiall.com/images/60/bilibili/1f357.png","https://www.emojiall.com/en/emoji/%F0%9F%8D%97","mapped","poultry leg","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f357png.png"
-"🍻","U+1F37B","[干杯]","https://www.emojiall.com/images/60/bilibili/1f37b.png","https://www.emojiall.com/en/emoji/%F0%9F%8D%BB","mapped","clinking beer mugs","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f37bpng.png"
-"❤","U+2764","[爱心]","https://www.emojiall.com/images/60/bilibili/2764.png","https://www.emojiall.com/en/emoji/%E2%9D%A4","mapped","red heart","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\2764png.png"
-"✌","U+270C","[胜利]","https://www.emojiall.com/images/60/bilibili/270c.png","https://www.emojiall.com/en/emoji/%E2%9C%8C","mapped","victory hand","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\270cpng.png"
-"💪","U+1F4AA","[加油]","https://www.emojiall.com/images/60/bilibili/1f4aa.png","https://www.emojiall.com/en/emoji/%F0%9F%92%AA","mapped","flexed biceps","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f4aapng.png"
-"🙏","U+1F64F","[保佑]","https://www.emojiall.com/images/60/bilibili/1f64f.png","https://www.emojiall.com/en/emoji/%F0%9F%99%8F","mapped","folded hands","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f64fpng.png"
-"👍","U+1F44D","[支持]","https://www.emojiall.com/images/60/bilibili/1f44d.png","https://www.emojiall.com/en/emoji/%F0%9F%91%8D","mapped","thumbs up","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f44dpng.png"
-"🫂","U+1FAC2","[拥抱]","https://www.emojiall.com/images/60/bilibili/1fac2.png","https://www.emojiall.com/en/emoji/%F0%9F%AB%82","mapped","people hugging","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1fac2png.png"
-"🤷♀","U+1F937 U+2640","[怪我咯]","https://www.emojiall.com/images/60/bilibili/1f937-200d-2640-fe0f.png","https://www.emojiall.com/en/emoji/%F0%9F%A4%B7%E2%80%8D%E2%99%80%EF%B8%8F","mapped","‍️woman shrugging",""
-"🧎","U+1F9CE","[跪了]","https://www.emojiall.com/images/60/bilibili/1f9ce.png","https://www.emojiall.com/en/emoji/%F0%9F%A7%8E","mapped","person kneeling","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f9cepng.png"
-"🐹","U+1F439","[老鼠]","https://www.emojiall.com/images/60/bilibili/1f439.png","https://www.emojiall.com/en/emoji/%F0%9F%90%B9","mapped","hamster","E:\OneDrive - The Chinese University of Hong Kong\College\Course Content\y3\AIST4010\project\emoji-finegrained-emotion\data\emoji_images\bilibili\1f439png.png"
-"","","[微笑]","https://www.emojiall.com/images/60/bilibili/default001.png","","vendor_only","",""
-"","","[哦呼]","https://www.emojiall.com/images/60/bilibili/default005.png","","vendor_only","",""
-"","","[疑惑]","https://www.emojiall.com/images/60/bilibili/default012.png","","vendor_only","",""
-"","","[辣眼睛]","https://www.emojiall.com/images/60/bilibili/default013.png","","vendor_only","",""
-"","","[奸笑]","https://www.emojiall.com/images/60/bilibili/default016.png","","vendor_only","",""
-"","","[阴险]","https://www.emojiall.com/images/60/bilibili/default020.png","","vendor_only","",""
-"","","[囧]","https://www.emojiall.com/images/60/bilibili/default022.png","","vendor_only","",""
-"","","[抠鼻]","https://www.emojiall.com/images/60/bilibili/default024.png","","vendor_only","",""
-"","","[笑哭]","https://www.emojiall.com/images/60/bilibili/default027.png","","vendor_only","",""
-"","","[妙啊]","https://www.emojiall.com/images/60/bilibili/default028.png","","vendor_only","",""
-"","","[滑稽]","https://www.emojiall.com/images/60/bilibili/default030.png","","vendor_only","",""
-"","","[点赞]","https://www.emojiall.com/images/60/bilibili/default033.png","","vendor_only","",""
-"","","[尴尬]","https://www.emojiall.com/images/60/bilibili/default036.png","","vendor_only","",""
-"","","[傲娇]","https://www.emojiall.com/images/60/bilibili/default040.png","","vendor_only","",""
-"","","[疼]","https://www.emojiall.com/images/60/bilibili/default041.png","","vendor_only","",""
-"","","[奋斗]","https://www.emojiall.com/images/60/bilibili/default051.png","","vendor_only","",""
-"","","[锦鲤]","https://www.emojiall.com/images/60/bilibili/default064.png","","vendor_only","",""
-"","","[抱拳]","https://www.emojiall.com/images/60/bilibili/default068.png","","vendor_only","",""
-"","","[响指]","https://www.emojiall.com/images/60/bilibili/default069.png","","vendor_only","",""
-"","","[黑洞]","https://www.emojiall.com/images/60/bilibili/default074.png","","vendor_only","",""
-"","","[2020]","https://www.emojiall.com/images/60/bilibili/default076.png","","vendor_only","",""
-"","","[福到了]","https://www.emojiall.com/images/60/bilibili/default077.png","","vendor_only","",""
-"","","[高兴]","https://www.emojiall.com/images/60/bilibili/default078.png","","vendor_only","",""
-"","","[气愤]","https://www.emojiall.com/images/60/bilibili/default079.png","","vendor_only","",""
-"","","[耍帅]","https://www.emojiall.com/images/60/bilibili/default080.png","","vendor_only","",""
+emoji,codepoints,name,img_url,detail_url,kind
+😁嘻嘻,U+1F601 U+563B U+563B,[呲牙],https://www.emojiall.com/images/60/bilibili/1f601.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%81,mapped
+👌OK,U+1F44C U+004F U+004B,[OK],https://www.emojiall.com/images/60/bilibili/1f44c.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%91%8C,mapped
+🤩好崇拜哦,U+1F929 U+597D U+5D07 U+62DC U+54E6,[星星眼],https://www.emojiall.com/images/60/bilibili/1f929.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A4%A9,mapped
+😏得意,U+1F60F U+5F97 U+610F,[歪嘴],https://www.emojiall.com/images/60/bilibili/1f60f.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%8F,mapped
+😒不高兴,U+1F612 U+4E0D U+9AD8 U+5174,[嫌弃],https://www.emojiall.com/images/60/bilibili/1f612.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%92,mapped
+😍花痴,U+1F60D U+82B1 U+75F4,[喜欢],https://www.emojiall.com/images/60/bilibili/1f60d.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%8D,mapped
+🍋柠檬,U+1F34B U+67E0 U+6AAC,[酸了],https://www.emojiall.com/images/60/bilibili/1f34b.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%8D%8B,mapped
+😭放声大哭,U+1F62D U+653E U+58F0 U+5927 U+54ED,[大哭],https://www.emojiall.com/images/60/bilibili/1f62d.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%AD,mapped
+😊羞涩微笑,U+1F60A U+7F9E U+6DA9 U+5FAE U+7B11,[害羞],https://www.emojiall.com/images/60/bilibili/1f60a.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%8A,mapped
+😛吐舌,U+1F61B U+5410 U+820C,[调皮],https://www.emojiall.com/images/60/bilibili/1f61b.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%9B,mapped
+😂笑哭了,U+1F602 U+7B11 U+54ED U+4E86,[喜极而泣],https://www.emojiall.com/images/60/bilibili/1f602.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%82,mapped
+🙂呵呵,U+1F642 U+5475 U+5475,[笑],https://www.emojiall.com/images/60/bilibili/1f642.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%99%82,mapped
+🤭不说,U+1F92D U+4E0D U+8BF4,[偷笑],https://www.emojiall.com/images/60/bilibili/1f92d.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A4%AD,mapped
+😄大笑,U+1F604 U+5927 U+7B11,[大笑],https://www.emojiall.com/images/60/bilibili/1f604.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%84,mapped
+🤦捂脸,U+1F926 U+6342 U+8138,[捂脸],https://www.emojiall.com/images/60/bilibili/1f926.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A4%A6,mapped
+😳脸红,U+1F633 U+8138 U+7EA2,[呆],https://www.emojiall.com/images/60/bilibili/1f633.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%B3,mapped
+😝眯眼吐舌,U+1F61D U+772F U+773C U+5410 U+820C,[惊喜],https://www.emojiall.com/images/60/bilibili/1f61d.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%9D,mapped
+😲震惊,U+1F632 U+9707 U+60CA,[惊讶],https://www.emojiall.com/images/60/bilibili/1f632.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%B2,mapped
+🐶狗脸,U+1F436 U+72D7 U+8138,[doge],https://www.emojiall.com/images/60/bilibili/1f436.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%90%B6,mapped
+🍉西瓜,U+1F349 U+897F U+74DC,[吃瓜],https://www.emojiall.com/images/60/bilibili/1f349.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%8D%89,mapped
+🙌举双手,U+1F64C U+4E3E U+53CC U+624B,[打call],https://www.emojiall.com/images/60/bilibili/1f64c.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%99%8C,mapped
+👏鼓掌,U+1F44F U+9F13 U+638C,[鼓掌],https://www.emojiall.com/images/60/bilibili/1f44f.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%91%8F,mapped
+😑无语,U+1F611 U+65E0 U+8BED,[无语],https://www.emojiall.com/images/60/bilibili/1f611.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%91,mapped
+🥶冷脸,U+1F976 U+51B7 U+8138,[冷],https://www.emojiall.com/images/60/bilibili/1f976.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A5%B6,mapped
+👻鬼,U+1F47B U+9B3C,[灵魂出窍],https://www.emojiall.com/images/60/bilibili/1f47b.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%91%BB,mapped
+😢哭,U+1F622 U+54ED,[委屈],https://www.emojiall.com/images/60/bilibili/1f622.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%A2,mapped
+😱吓死了,U+1F631 U+5413 U+6B7B U+4E86,[吓],https://www.emojiall.com/images/60/bilibili/1f631.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%B1,mapped
+🤒发烧,U+1F912 U+53D1 U+70E7,[生病],https://www.emojiall.com/images/60/bilibili/1f912.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A4%92,mapped
+🤮呕吐,U+1F92E U+5455 U+5410,[吐],https://www.emojiall.com/images/60/bilibili/1f92e.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A4%AE,mapped
+🤫安静的脸,U+1F92B U+5B89 U+9759 U+7684 U+8138,[嘘声],https://www.emojiall.com/images/60/bilibili/1f92b.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A4%AB,mapped
+🙈非礼勿视,U+1F648 U+975E U+793C U+52FF U+89C6,[捂眼],https://www.emojiall.com/images/60/bilibili/1f648.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%99%88,mapped
+🤔想一想,U+1F914 U+60F3 U+4E00 U+60F3,[思考],https://www.emojiall.com/images/60/bilibili/1f914.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A4%94,mapped
+👋挥手,U+1F44B U+6325 U+624B,[再见],https://www.emojiall.com/images/60/bilibili/1f44b.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%91%8B,mapped
+🙄翻白眼,U+1F644 U+7FFB U+767D U+773C,[翻白眼],https://www.emojiall.com/images/60/bilibili/1f644.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%99%84,mapped
+🥱打呵欠,U+1F971 U+6253 U+5475 U+6B20,[哈欠],https://www.emojiall.com/images/60/bilibili/1f971.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A5%B1,mapped
+😎墨镜笑脸,U+1F60E U+58A8 U+955C U+7B11 U+8138,[墨镜],https://www.emojiall.com/images/60/bilibili/1f60e.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%8E,mapped
+🙁微微不满,U+1F641 U+5FAE U+5FAE U+4E0D U+6EE1,[难过],https://www.emojiall.com/images/60/bilibili/1f641.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%99%81,mapped
+😟担心,U+1F61F U+62C5 U+5FC3,[撇嘴],https://www.emojiall.com/images/60/bilibili/1f61f.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%9F,mapped
+😫累,U+1F62B U+7D2F,[抓狂],https://www.emojiall.com/images/60/bilibili/1f62b.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%AB,mapped
+😡怒火中烧,U+1F621 U+6012 U+706B U+4E2D U+70E7,[生气],https://www.emojiall.com/images/60/bilibili/1f621.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%A1,mapped
+😷感冒,U+1F637 U+611F U+5192,[口罩],https://www.emojiall.com/images/60/bilibili/1f637.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%98%B7,mapped
+🥮月饼,U+1F96E U+6708 U+997C,[月饼],https://www.emojiall.com/images/60/bilibili/1f96e.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A5%AE,mapped
+🛰卫星,U+1F6F0 U+536B U+661F,[视频卫星],https://www.emojiall.com/images/60/bilibili/1f6f0.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%9B%B0,mapped
+📺电视机,U+1F4FA U+7535 U+89C6 U+673A,[11周年],https://www.emojiall.com/images/60/bilibili/1f4fa.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%93%BA,mapped
+🍗家禽的腿,U+1F357 U+5BB6 U+79BD U+7684 U+817F,[鸡腿],https://www.emojiall.com/images/60/bilibili/1f357.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%8D%97,mapped
+🍻干杯,U+1F37B U+5E72 U+676F,[干杯],https://www.emojiall.com/images/60/bilibili/1f37b.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%8D%BB,mapped
+❤红心,U+2764 U+7EA2 U+5FC3,[爱心],https://www.emojiall.com/images/60/bilibili/2764.png,https://www.emojiall.com/zh-hans/emoji/%E2%9D%A4,mapped
+✌胜利手势,U+270C U+80DC U+5229 U+624B U+52BF,[胜利],https://www.emojiall.com/images/60/bilibili/270c.png,https://www.emojiall.com/zh-hans/emoji/%E2%9C%8C,mapped
+💪肌肉,U+1F4AA U+808C U+8089,[加油],https://www.emojiall.com/images/60/bilibili/1f4aa.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%92%AA,mapped
+🙏双手合十,U+1F64F U+53CC U+624B U+5408 U+5341,[保佑],https://www.emojiall.com/images/60/bilibili/1f64f.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%99%8F,mapped
+👍拇指向上,U+1F44D U+62C7 U+6307 U+5411 U+4E0A,[支持],https://www.emojiall.com/images/60/bilibili/1f44d.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%91%8D,mapped
+🫂人的拥抱,U+1FAC2 U+4EBA U+7684 U+62E5 U+62B1,[拥抱],https://www.emojiall.com/images/60/bilibili/1fac2.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%AB%82,mapped
+🤷‍♀️女生耸肩,U+1F937 U+200D U+2640 U+FE0F U+5973 U+751F U+8038 U+80A9,[怪我咯],https://www.emojiall.com/images/60/bilibili/1f937-200d-2640-fe0f.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A4%B7%E2%80%8D%E2%99%80%EF%B8%8F,mapped
+🧎下跪者,U+1F9CE U+4E0B U+8DEA U+8005,[跪了],https://www.emojiall.com/images/60/bilibili/1f9ce.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%A7%8E,mapped
+🐹仓鼠,U+1F439 U+4ED3 U+9F20,[老鼠],https://www.emojiall.com/images/60/bilibili/1f439.png,https://www.emojiall.com/zh-hans/emoji/%F0%9F%90%B9,mapped
+,,[微笑],https://www.emojiall.com/images/60/bilibili/default001.png,,vendor_only
+,,[哦呼],https://www.emojiall.com/images/60/bilibili/default005.png,,vendor_only
+,,[疑惑],https://www.emojiall.com/images/60/bilibili/default012.png,,vendor_only
+,,[辣眼睛],https://www.emojiall.com/images/60/bilibili/default013.png,,vendor_only
+,,[奸笑],https://www.emojiall.com/images/60/bilibili/default016.png,,vendor_only
+,,[阴险],https://www.emojiall.com/images/60/bilibili/default020.png,,vendor_only
+,,[囧],https://www.emojiall.com/images/60/bilibili/default022.png,,vendor_only
+,,[抠鼻],https://www.emojiall.com/images/60/bilibili/default024.png,,vendor_only
+,,[笑哭],https://www.emojiall.com/images/60/bilibili/default027.png,,vendor_only
+,,[妙啊],https://www.emojiall.com/images/60/bilibili/default028.png,,vendor_only
+,,[滑稽],https://www.emojiall.com/images/60/bilibili/default030.png,,vendor_only
+,,[点赞],https://www.emojiall.com/images/60/bilibili/default033.png,,vendor_only
+,,[尴尬],https://www.emojiall.com/images/60/bilibili/default036.png,,vendor_only
+,,[傲娇],https://www.emojiall.com/images/60/bilibili/default040.png,,vendor_only
+,,[疼],https://www.emojiall.com/images/60/bilibili/default041.png,,vendor_only
+,,[奋斗],https://www.emojiall.com/images/60/bilibili/default051.png,,vendor_only
+,,[锦鲤],https://www.emojiall.com/images/60/bilibili/default064.png,,vendor_only
+,,[抱拳],https://www.emojiall.com/images/60/bilibili/default068.png,,vendor_only
+,,[响指],https://www.emojiall.com/images/60/bilibili/default069.png,,vendor_only
+,,[黑洞],https://www.emojiall.com/images/60/bilibili/default074.png,,vendor_only
+,,[2020],https://www.emojiall.com/images/60/bilibili/default076.png,,vendor_only
+,,[福到了],https://www.emojiall.com/images/60/bilibili/default077.png,,vendor_only
+,,[高兴],https://www.emojiall.com/images/60/bilibili/default078.png,,vendor_only
+,,[气愤],https://www.emojiall.com/images/60/bilibili/default079.png,,vendor_only
+,,[耍帅],https://www.emojiall.com/images/60/bilibili/default080.png,,vendor_only

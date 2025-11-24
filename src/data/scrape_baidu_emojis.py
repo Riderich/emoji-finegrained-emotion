@@ -578,6 +578,37 @@ def write_csv(path: Path, data: List[Dict]) -> None:
             ])
 
 
+def write_image_name_csv(path: Path, data: List[Dict]) -> None:
+    """写出图片-表情名映射的CSV（含本地保存路径）。
+
+    中文说明：该CSV专注于“图片URL ↔ 表情名称”的对应关系，同时保留
+    可用的emoji字符、码点、详情页链接与kind，并在下载图片时记录本地路径。
+
+    参数
+    ----
+    path : Path
+        输出CSV文件路径。
+    data : List[Dict]
+        富集的条目列表，可能包含 'local_path' 字段。
+    """
+    ensure_dir(path.parent)
+    cols = ["name", "img_url", "local_path", "emoji", "codepoints", "detail_url", "kind"]
+    with path.open("w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(cols)
+        for e in data:
+            cps = " ".join(e.get("codepoints", []))
+            w.writerow([
+                e.get("name"),
+                e.get("img_url"),
+                e.get("local_path"),  # 中文说明：如有下载则记录本地文件路径
+                e.get("emoji"),
+                cps,
+                e.get("detail_url"),
+                e.get("kind"),
+            ])
+
+
 def download_image(sess: requests.Session, url: str, out_dir: Path, name_hint: Optional[str]) -> Optional[Path]:
     """Download a single image to `out_dir` with optional name hint.
 
@@ -643,6 +674,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--platform_url", type=str, default=None, help="Override platform page URL")
     p.add_argument("--out_json", type=str, default=None, help="Output JSON path")
     p.add_argument("--out_csv", type=str, default=None, help="Output CSV path")
+    p.add_argument("--out_name_csv", type=str, default=None, help="Output image-name mapping CSV path")
     p.add_argument("--download_images", action="store_true", help="Download vendor images to local directory")
     p.add_argument("--img_dir", type=str, default=None, help="Image output directory if downloading")
     p.add_argument("--limit", type=int, default=0, help="Limit number of entries to process (0 means no limit)")
@@ -745,6 +777,8 @@ def main() -> None:
     # 英文注释：Default paths now target repo's data folders to avoid CWD issues
     out_json = Path(args.out_json) if args.out_json else default_vendor_dir / f"{platform}_emojiall_map.json"
     out_csv = Path(args.out_csv) if args.out_csv else default_vendor_dir / f"{platform}_emojiall_map.csv"
+    # 中文说明：新增图片-名称专用映射CSV的默认输出位置
+    out_name_csv = Path(args.out_name_csv) if args.out_name_csv else default_vendor_dir / f"{platform}_image_name_map.csv"
     img_dir = Path(args.img_dir) if args.img_dir else default_images_dir / platform
 
     html, final_url = try_fetch_with_locales(
@@ -835,6 +869,8 @@ def main() -> None:
             target_dir = img_dir_unmapped if e.get("kind") == "vendor_only" else img_dir
             out = download_image(sess, url, target_dir, hint)
             if out:
+                # 中文说明：若下载成功，记录本地文件路径，便于后续建立图片与名称映射
+                e["local_path"] = str(out)
                 if e.get("kind") == "vendor_only":
                     saved_u += 1
                 else:
@@ -850,7 +886,9 @@ def main() -> None:
     # 输出 JSON 与 CSV
     write_json(out_json, enriched)
     write_csv(out_csv, enriched)
-    print(f"[Output] JSON: {out_json} | CSV: {out_csv}")
+    # 中文说明：额外写出图片-表情名映射CSV，满足对“图片与表情名对应关系”的保存需求
+    write_image_name_csv(out_name_csv, enriched)
+    print(f"[Output] JSON: {out_json} | CSV: {out_csv} | NAME_CSV: {out_name_csv}")
 
 
 if __name__ == "__main__":

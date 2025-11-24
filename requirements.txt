@@ -1,4 +1,6 @@
 # 核心深度学习与NLP
+optuna>=3.6  # 超参搜索库：支持TPE采样与剪枝
+modelscope>=1.11  # ModelScope SDK：用于从ModelScope Hub下载本地模型快照
 torch>=2.2
 transformers>=4.44.0
 sentencepiece>=0.1.99

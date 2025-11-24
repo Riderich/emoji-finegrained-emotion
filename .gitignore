@@ -27,3 +27,7 @@ logs/
 *.log
 *.tmp
 *.swp
+ 
+ # 敏感凭证与会话文件（避免泄露）
+ # 说明：cookies*.json 包含登录会话信息，不应提交到仓库
+ src/data/cookies*.json

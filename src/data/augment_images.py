@@ -94,8 +94,14 @@ def main() -> None:
     """Entry point: augment images in the source directory."""
     # 中文说明：读取源目录内所有 PNG，逐一增强并保存到目标目录
     args = parse_args()
+    # 中文说明：统一相对路径以仓库根解析，兼容跨平台
+    repo_root = Path(__file__).resolve().parents[2]
     src = Path(args.src)
+    if not src.is_absolute():
+        src = (repo_root / src).resolve()
     dst = Path(args.dst)
+    if not dst.is_absolute():
+        dst = (repo_root / dst).resolve()
     ensure_dir(dst)
 
     files = list(src.glob("*.png"))
