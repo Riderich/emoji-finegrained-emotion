@@ -12,7 +12,8 @@ set OUT_SEED=emoji-finegrained-emotion\data\vendor\crawl\seed_bvids.csv
 set FETCH_MODE=popular
 set FETCH_MIN_REPLY=0
 set FETCH_MAX_PAGES=5
-set FETCH_SLEEP=0.8
+REM 中文说明：获取阶段默认等待改为 0.5s；若触发限流（412/429），Python 内部将自适应等待10秒后重试该页
+set FETCH_SLEEP=0.5
 set FETCH_PS=20
 set KEYWORDS_FILE=emoji-finegrained-emotion\data\vendor\keywords_bilibili.txt
 
@@ -41,8 +42,8 @@ REM 第二步：按 BV 转换为 AID 后批量抓取评论，按表情映射过�
 set ROOT=emoji-finegrained-emotion
 set PER_DIR=emoji-finegrained-emotion\data\vendor\crawl\by_bvid
 set EMOJI_MAP=emoji-finegrained-emotion\data\vendor\bilibili_emojiall_map.json
-REM 中文说明：将抓取分页间歇从 1.6s 下调为 0.8s；若遇到 412/429 可提高
-set CRAWL_SLEEP=0.8
+REM 中文说明：抓取阶段默认等待改为 0.5s；若触发限流（412/429），Python 内部将自适应等待10秒后重试该页
+set CRAWL_SLEEP=0.5
 conda run -n cuda_env python -m src.data.crawl_bilibili ^
   --root "%ROOT%" ^
   --bvids-file "%OUT_SEED%" ^

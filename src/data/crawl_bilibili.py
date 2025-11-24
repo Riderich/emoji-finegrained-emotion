@@ -286,8 +286,22 @@ def fetch_replies_page_by_aid(session: requests.Session, aid: int, page: int, bv
         # 中文行间注释：优先使用视频页 Referer；若无则兜底主页
         headers = {"Referer": f"https://www.bilibili.com/video/{bvid_referer}/"} if bvid_referer else {"Referer": "https://www.bilibili.com/"}
         resp = session.get(url, params=params, headers=headers, timeout=10)
-        resp.raise_for_status()
-        return resp.json()
+        status = resp.status_code
+        # 中文行间注释：限流/风控（412/429）时，返回带有 code 的占位结构，便于上层识别并自适应退避
+        if status in (412, 429):
+            preview = ""
+            try:
+                preview = resp.text[:120]
+            except Exception:
+                pass
+            print(f"[rate-limit] reply限流 status={status} aid={aid} pn={page}，将触发自适应退避。片段: {preview}")
+            return {"code": status, "message": "rate_limited"}
+        if status != 200:
+            return {}
+        try:
+            return resp.json()
+        except Exception:
+            return {}
     except Exception:
         return {}
 
@@ -497,19 +511,37 @@ def crawl_bilibili_for_bvid(session: requests.Session, bvid: str, max_pages: int
         return all_rows
 
     for pn in range(1, max_pages + 1):
-        # 中文行间注释：以 AID 调用旧版分页接口，Referer 设置为视频页以降低 412 风险
-        data = fetch_replies_page_by_aid(session, aid, pn, bvid_referer=bvid)
-        if not data or data.get("code") != 0:
-            # 中文行间注释：失败退避，含随机抖动，避免触发更严的限流
+        # 中文行间注释：为每一页抓取增加“限流自适应”重试机制——遇到 412/429 等限流状态，等待10秒后重试当前页
+        stop_this_bv = False
+        attempts = 0
+        while True:
+            # 中文行间注释：以 AID 调用旧版分页接口，Referer 设置为视频页以降低 412 风险
+            data = fetch_replies_page_by_aid(session, aid, pn, bvid_referer=bvid)
             code_prim = (data or {}).get("code")
             # 中文行间注释：-400（超出最大偏移量）表示页码超过实际页数，应提前停止该 BV
             if code_prim == -400:
                 print(f"[info] bvid={bvid} aid={aid} pn={pn} 返回-400：超过最大偏移量，停止该BV。")
+                stop_this_bv = True
                 break
-            factor_prim = 2.0 if code_prim in (412, 429) else 1.5
-            jitter_prim = random.uniform(0.0, sleep_seconds * 0.5)
-            time.sleep(sleep_seconds * factor_prim + jitter_prim)
-            continue
+            if not data or code_prim != 0:
+                # 中文行间注释：限流状态（412/429），等待10秒后重试当前页；最多重试5次
+                if code_prim in (412, 429):
+                    print(f"[rate-limit] bvid={bvid} aid={aid} pn={pn} code={code_prim}，10秒后重试当前页。")
+                    time.sleep(10)
+                    attempts += 1
+                    if attempts < 5:
+                        continue
+                    else:
+                        print(f"[warn] bvid={bvid} aid={aid} pn={pn} 限流重试超过上限，跳过该页。")
+                        break
+                # 中文行间注释：其他错误，轻度退避后跳过该页
+                jitter_prim = random.uniform(0.0, sleep_seconds * 0.5)
+                time.sleep(sleep_seconds + jitter_prim)
+                break
+            # 中文行间注释：成功拿到数据，退出重试循环
+            break
+        if stop_this_bv:
+            break
 
         payload = data.get("data") or {}
         replies = payload.get("replies") or []
@@ -689,18 +721,29 @@ def crawl_bilibili_for_bvid_mapped(session: requests.Session, bvid: str, max_pag
         return all_rows
 
     for pn in range(1, max_pages + 1):
-        data = fetch_replies_page_by_aid(session, aid, pn, bvid_referer=bvid)
-        if not data or data.get("code") != 0:
-            # 中文说明：退避等待后继续下一页
+        attempts = 0
+        while True:
+            data = fetch_replies_page_by_aid(session, aid, pn, bvid_referer=bvid)
             code = (data or {}).get("code")
             # 中文说明：-400（超出最大偏移量）表示页码超过实际页数，应提前停止该 BV
             if code == -400:
                 print(f"[info] bvid={bvid} aid={aid} pn={pn} 返回-400：超过最大偏移量，停止该BV。")
+                attempts = 0
                 break
-            factor = 2.2 if code in (412, 429) else 1.6
-            jitter = random.uniform(0.0, sleep_seconds * 0.5)
-            time.sleep(sleep_seconds * factor + jitter)
-            continue
+            if not data or code != 0:
+                if code in (412, 429):
+                    print(f"[rate-limit] bvid={bvid} aid={aid} pn={pn} code={code}，10秒后重试当前页。")
+                    time.sleep(10)
+                    attempts += 1
+                    if attempts < 5:
+                        continue
+                    else:
+                        print(f"[warn] bvid={bvid} aid={aid} pn={pn} 限流重试超过上限，跳过该页。")
+                        break
+                jitter = random.uniform(0.0, sleep_seconds * 0.5)
+                time.sleep(sleep_seconds + jitter)
+                break
+            break
 
         payload = data.get("data") or {}
         replies = payload.get("replies") or []
@@ -876,7 +919,7 @@ def main():
     parser.add_argument("--bvids-file", type=str, default="", help="BV 列表文件（CSV含bvid列，或TXT逐行一个BV）")
     parser.add_argument("--max-pages", type=int, default=3, help="每个 BV 抓取的评论页数上限")
     # 中文行间注释：新增分页请求间歇秒数（含随机抖动），避免限流
-    parser.add_argument("--sleep-seconds", type=float, default=0.8, help="分页间歇秒数（含随机抖动，建议≥0.6），过低易触发限流")  # 中文行间注释：默认从 1.2s 下调到 0.8s，以加快抓取；如出现 412/429 可提高该值
+    parser.add_argument("--sleep-seconds", type=float, default=0.5, help="分页间歇秒数（含随机抖动，建议≥0.5）；若触发限流将自动等待10秒后重试该页")  # 中文行间注释：根据需求默认降至 0.5s，并在 412/429 时自适应退避 10s
     parser.add_argument("--output", type=str, default=os.path.join("data", "vendor", "crawl", "bilibili_emoji_sentences.csv"), help="输出 CSV 相对路径")
     parser.add_argument("--print-first-messages", type=int, default=0, help="打印首批评论文本条数（仅打印，不写CSV）")
     parser.add_argument("--sessdata", type=str, default=None, help="可选：B站登录态 SESSDATA，用于提升接口可访问性")
@@ -979,30 +1022,47 @@ def main():
             return rows_acc
         for pn in range(1, args.max_pages + 1):
             # 中文行间注释：按 AID 抓取本页，Referer 设置为对应视频页
-            data = fetch_replies_page_by_aid(session, aid, pn, bvid_referer=bvid)
-            if not data or data.get("code") != 0:
-                # 中文行间注释：增强调试信息——输出接口参数、UA、Cookie预览以及返回的code/message
-                try:
-                    ua = session.headers.get("User-Agent", "")
-                    cookie_preview = _preview_cookie(session)
-                    # 构造调用参数用于打印（简要展示 AID 与页码）
-                    dbg_params = {"pn": pn, "type": 1, "oid": aid}
-                    api_code = data.get("code") if data else None
-                    api_msg = data.get("message") if data else ""
-                    keys = list(data.keys())[:6] if isinstance(data, dict) else []
-                    # 中文说明：-400（超出最大偏移量）表示页码超过实际页数，应提前停止该 BV 的抓取
+            attempts = 0
+            while True:
+                data = fetch_replies_page_by_aid(session, aid, pn, bvid_referer=bvid)
+                api_code = data.get("code") if data else None
+                # 中文说明：增强调试信息——输出接口参数、UA、Cookie预览以及返回的code/message
+                if not data or api_code != 0:
+                    try:
+                        ua = session.headers.get("User-Agent", "")
+                        cookie_preview = _preview_cookie(session)
+                        # 构造调用参数用于打印（简要展示 AID 与页码）
+                        dbg_params = {"pn": pn, "type": 1, "oid": aid}
+                        api_msg = data.get("message") if isinstance(data, dict) else ""
+                        keys = list(data.keys())[:6] if isinstance(data, dict) else []
+                        # 中文说明：-400（超出最大偏移量）表示页码超过实际页数，应提前停止该 BV 的抓取
+                        if api_code == -400:
+                            print(f"[info] bvid={bvid} aid={aid} pn={pn} 返回-400：超过最大偏移量，停止该BV。")
+                        else:
+                            print(f"[warn] bvid={bvid} aid={aid} pn={pn} 请求失败或返回码不为0，准备退避/重试")
+                        print(f"[debug] params={dbg_params} ua='{ua[:36]}...' cookie='{cookie_preview}' api.code={api_code} api.msg='{api_msg}' json.keys={keys}")
+                    except Exception:
+                        pass
+                    # -400：页码超过实际页数，直接提前停止该 BV
                     if api_code == -400:
-                        print(f"[info] bvid={bvid} aid={aid} pn={pn} 返回-400：超过最大偏移量，停止该BV。")
-                    else:
-                        print(f"[warn] bvid={bvid} aid={aid} pn={pn} 请求失败或返回码不为0，跳过该页")
-                    print(f"[debug] params={dbg_params} ua='{ua[:36]}...' cookie='{cookie_preview}' api.code={api_code} api.msg='{api_msg}' json.keys={keys}")
-                except Exception:
-                    pass
-                # -400：页码超过实际页数，直接提前停止该 BV；其他错误码继续退避后尝试下一页
-                if api_code == -400:
+                        break
+                    # 限流状态：等待10秒后重试当前页（最多5次）
+                    if api_code in (412, 429):
+                        print(f"[rate-limit] bvid={bvid} aid={aid} pn={pn} code={api_code}，10秒后重试当前页。")
+                        time.sleep(10)
+                        attempts += 1
+                        if attempts < 5:
+                            continue
+                        else:
+                            print(f"[warn] bvid={bvid} aid={aid} pn={pn} 限流重试超过上限，跳过该页。")
+                            break
+                    # 其他错误：轻度退避后跳过该页
+                    time.sleep(args.sleep_seconds)
                     break
-                time.sleep(args.sleep_seconds)
-                continue
+                # 成功拿到数据，退出重试循环
+                break
+            if api_code == -400:
+                break
 
             payload = data.get("data") or {}
             replies = payload.get("replies") or []

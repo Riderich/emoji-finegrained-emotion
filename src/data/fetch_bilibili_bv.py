@@ -138,54 +138,75 @@ def search_video_by_keyword(
             "order": order,            # 可选：pubdate/view 等
             "duration": 0,             # 0=全部时长
         }
-        try:
-            resp = session.get(base_url, params=params, timeout=10)
-            if resp.status_code != 200:
-                # 中文说明：调试输出失败时的关键信息，便于定位（仅异常时打印，避免刷屏）
-                body_preview = ""
-                try:
-                    body_preview = resp.text[:200]
-                except Exception:
-                    pass
-                print(f"[warn] 搜索接口HTTP状态异常 status={resp.status_code} ua={session.headers.get('User-Agent')} url={resp.url}")
-                print(f"[warn] 响应片段: {body_preview}")
+        # 中文说明：为每一页增加“限流自适应”重试机制——遇到 412/429 等限流状态，等待10秒后重试当前页
+        attempts = 0
+        while True:
+            try:
+                resp = session.get(base_url, params=params, timeout=10)
+                status = resp.status_code
+                if status in (412, 429):
+                    # 中文说明：触发限流，等待10秒后重试当前页；最多重试5次，避免死循环
+                    preview = ""
+                    try:
+                        preview = resp.text[:120]
+                    except Exception:
+                        pass
+                    print(f"[rate-limit] 搜索限流 status={status} page={page} kw='{keyword}'，10秒后重试。片段: {preview}")
+                    time.sleep(10)
+                    attempts += 1
+                    if attempts < 5:
+                        continue
+                    else:
+                        print(f"[warn] 搜索页 page={page} 达到重试上限，跳过该页。")
+                        break
+                if status != 200:
+                    # 中文说明：非200且非限流状态，轻度退避并跳过该页
+                    body_preview = ""
+                    try:
+                        body_preview = resp.text[:200]
+                    except Exception:
+                        pass
+                    print(f"[warn] 搜索HTTP异常 status={status} ua={session.headers.get('User-Agent')} url={resp.url}")
+                    print(f"[warn] 响应片段: {body_preview}")
+                    time.sleep(sleep_seconds)
+                    break
+                j = resp.json()
+                data = j.get("data") or {}
+                result = data.get("result") or []
+                # 中文说明：若接口返回码不为0或结果为空，进行轻度调试输出
+                code = j.get("code")
+                if code not in (None, 0) or not result:
+                    print(f"[debug] 搜索返回 code={code} page={page} keyword={keyword} keys={list(j.keys())}")
+                # 中文说明：逐条提取必要字段；缺失字段做容错处理
+                for it in result:
+                    bvid = (it.get("bvid") or "").strip()
+                    if not bvid:
+                        continue
+                    title = (it.get("title") or "").strip()
+                    author = (it.get("author") or "").strip()
+                    pubdate = it.get("pubdate") or 0   # Unix 秒
+                    play = it.get("play") or 0
+                    danmaku = it.get("danmaku") or 0
+                    duration = (it.get("duration") or "").strip()  # 形如 "3:45"
+                    out.append({
+                        "bvid": bvid,
+                        "title": title,
+                        "author": author,
+                        "pubdate": pubdate,
+                        "play": play,
+                        "danmaku": danmaku,
+                        "duration": duration,
+                        "url": f"https://www.bilibili.com/video/{bvid}",
+                        "keyword": keyword,
+                        "page": page,
+                    })
+                # 中文说明：成功解析当前页后退出重试循环，进入下一页
+                break
+            except Exception:
+                # 中文说明：网络或解析失败，跳过该页并继续下一页
                 time.sleep(sleep_seconds)
-                continue
-            j = resp.json()
-            data = j.get("data") or {}
-            result = data.get("result") or []
-            # 中文说明：若接口返回码不为0或结果为空，进行轻度调试输出
-            code = j.get("code")
-            if code not in (None, 0) or not result:
-                print(f"[debug] 搜索返回 code={code} page={page} keyword={keyword} keys={list(j.keys())}")
-            # 中文说明：逐条提取必要字段；缺失字段做容错处理
-            for it in result:
-                bvid = (it.get("bvid") or "").strip()
-                if not bvid:
-                    continue
-                title = (it.get("title") or "").strip()
-                author = (it.get("author") or "").strip()
-                pubdate = it.get("pubdate") or 0   # Unix 秒
-                play = it.get("play") or 0
-                danmaku = it.get("danmaku") or 0
-                duration = (it.get("duration") or "").strip()  # 形如 "3:45"
-                out.append({
-                    "bvid": bvid,
-                    "title": title,
-                    "author": author,
-                    "pubdate": pubdate,
-                    "play": play,
-                    "danmaku": danmaku,
-                    "duration": duration,
-                    "url": f"https://www.bilibili.com/video/{bvid}",
-                    "keyword": keyword,
-                    "page": page,
-                })
-        except Exception:
-            # 中文说明：网络或解析失败，跳过该页并继续下一页
-            time.sleep(sleep_seconds)
-            continue
-        # 中文说明：加入轻微随机抖动，降低被限流风险
+                break
+        # 中文说明：每页结束加入轻微随机抖动，降低被限流风险
         jitter = random.uniform(0.0, sleep_seconds * 0.3)
         time.sleep(sleep_seconds + jitter)
     return out
@@ -205,47 +226,60 @@ def fetch_popular_videos(
             "pn": page,   # 中文说明：页码，从1开始
             "ps": ps,     # 中文说明：每页数量，常见值为20
         }
-        try:
-            resp = session.get(base_url, params=params, timeout=10)
-            if resp.status_code != 200:
+        attempts = 0
+        while True:
+            try:
+                resp = session.get(base_url, params=params, timeout=10)
+                status = resp.status_code
+                if status in (412, 429):
+                    print(f"[rate-limit] popular 限流 status={status} page={page}，10秒后重试。")
+                    time.sleep(10)
+                    attempts += 1
+                    if attempts < 5:
+                        continue
+                    else:
+                        print(f"[warn] popular page={page} 达到重试上限，跳过该页。")
+                        break
+                if status != 200:
+                    time.sleep(sleep_seconds)
+                    break
+                j = resp.json()
+                data = j.get("data") or {}
+                # 中文说明：popular接口的列表字段通常为 data.list
+                result = data.get("list") or []
+                for it in result:
+                    bvid = (it.get("bvid") or "").strip()
+                    if not bvid:
+                        continue
+                    title = (it.get("title") or "").strip()
+                    # 中文说明：作者信息位于 owner.name
+                    owner = it.get("owner") or {}
+                    author = (owner.get("name") or "").strip()
+                    # 中文说明：发布时间可能为 pubdate 或 ctime，做容错处理
+                    pubdate = it.get("pubdate") or it.get("ctime") or 0
+                    stat = it.get("stat") or {}
+                    view = stat.get("view") or 0
+                    reply = stat.get("reply") or 0
+                    danmaku = stat.get("danmaku") or 0
+                    duration = it.get("duration") or 0
+                    out.append({
+                        "bvid": bvid,
+                        "title": title,
+                        "author": author,
+                        "pubdate": pubdate,
+                        "view": view,
+                        "reply": reply,
+                        "danmaku": danmaku,
+                        "duration": duration,
+                        "url": f"https://www.bilibili.com/video/{bvid}",
+                        "keyword": "",   # 中文说明：热门模式不含关键词
+                        "page": page,
+                        "source": "popular",
+                    })
+                break
+            except Exception:
                 time.sleep(sleep_seconds)
-                continue
-            j = resp.json()
-            data = j.get("data") or {}
-            # 中文说明：popular接口的列表字段通常为 data.list
-            result = data.get("list") or []
-            for it in result:
-                bvid = (it.get("bvid") or "").strip()
-                if not bvid:
-                    continue
-                title = (it.get("title") or "").strip()
-                # 中文说明：作者信息位于 owner.name
-                owner = it.get("owner") or {}
-                author = (owner.get("name") or "").strip()
-                # 中文说明：发布时间可能为 pubdate 或 ctime，做容错处理
-                pubdate = it.get("pubdate") or it.get("ctime") or 0
-                stat = it.get("stat") or {}
-                view = stat.get("view") or 0
-                reply = stat.get("reply") or 0
-                danmaku = stat.get("danmaku") or 0
-                duration = it.get("duration") or 0
-                out.append({
-                    "bvid": bvid,
-                    "title": title,
-                    "author": author,
-                    "pubdate": pubdate,
-                    "view": view,
-                    "reply": reply,
-                    "danmaku": danmaku,
-                    "duration": duration,
-                    "url": f"https://www.bilibili.com/video/{bvid}",
-                    "keyword": "",   # 中文说明：热门模式不含关键词
-                    "page": page,
-                    "source": "popular",
-                })
-        except Exception:
-            time.sleep(sleep_seconds)
-            continue
+                break
         jitter = random.uniform(0.0, sleep_seconds * 0.3)
         time.sleep(sleep_seconds + jitter)
     return out
@@ -255,16 +289,28 @@ def fetch_popular_videos(
 def fetch_video_stat_by_bvid(session: requests.Session, bvid: str) -> Dict[str, int]:
     base_url = "https://api.bilibili.com/x/web-interface/view"
     try:
-        resp = session.get(base_url, params={"bvid": bvid}, timeout=10)
-        if resp.status_code != 200:
-            return {"view": 0, "reply": 0}
-        j = resp.json()
-        data = j.get("data") or {}
-        stat = data.get("stat") or {}
-        return {
-            "view": stat.get("view") or 0,
-            "reply": stat.get("reply") or 0,
-        }
+        attempts = 0
+        while True:
+            resp = session.get(base_url, params={"bvid": bvid}, timeout=10)
+            status = resp.status_code
+            if status in (412, 429):
+                print(f"[rate-limit] stat 限流 status={status} bvid={bvid}，10秒后重试。")
+                time.sleep(10)
+                attempts += 1
+                if attempts < 5:
+                    continue
+                else:
+                    print(f"[warn] stat bvid={bvid} 达到重试上限，返回空统计。")
+                    return {"view": 0, "reply": 0}
+            if status != 200:
+                return {"view": 0, "reply": 0}
+            j = resp.json()
+            data = j.get("data") or {}
+            stat = data.get("stat") or {}
+            return {
+                "view": stat.get("view") or 0,
+                "reply": stat.get("reply") or 0,
+            }
     except Exception:
         return {"view": 0, "reply": 0}
 
@@ -320,7 +366,7 @@ def main():
     # 中文说明：分页与节流
     parser.add_argument("--max-pages", type=int, default=5, help="分页页数上限（search为每关键词的页数；popular为热门榜页数）")
     parser.add_argument("--ps", type=int, default=20, help="popular模式每页数量（建议20）")
-    parser.add_argument("--sleep-seconds", type=float, default=0.8, help="分页请求间歇秒数（含随机抖动，建议≥0.6；过低易限流）")  # 中文行间注释：默认从 1.2s 下调到 0.8s，若频繁失败请调回≥1.0
+    parser.add_argument("--sleep-seconds", type=float, default=0.5, help="分页请求间歇秒数（含随机抖动，建议≥0.5）；限流将自动10秒后重试该页")  # 中文行间注释：根据需求默认降至 0.5s；若频繁限流，请考虑提高或减少并发
     parser.add_argument("--sessdata", type=str, default=None, help="可选：B站登录态 SESSDATA")
     # 中文说明：过滤条件
     parser.add_argument("--min-reply", type=int, default=0, help="按总评论数过滤（>=该值保留；0表示不过滤）")
