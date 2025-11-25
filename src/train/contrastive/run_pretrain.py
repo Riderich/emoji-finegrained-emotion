@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import glob
-import argparse
+# 中文说明：移除命令行参数依赖，采用代码内常量实现“一键运行”
 import torch
 from torch.utils.data import DataLoader, random_split
 from transformers import AutoTokenizer
@@ -14,7 +14,11 @@ from modelscope.hub.snapshot_download import snapshot_download
 # 相对导入：与项目结构保持一致
 from src.train.contrastive.dataset import TextEmojiDataset
 from src.train.contrastive.model import TextEmojiContrastive
-from src.train.contrastive.train_loop import train_one_epoch, eval_retrieval
+from src.train.contrastive.train_loop import (
+    build_emoji_prototypes,
+    train_one_epoch_retrieval,
+    eval_topk_accuracy,
+)
 
 
 class Args:
@@ -24,7 +28,7 @@ class Args:
     路径均使用项目相对路径，确保在Windows下可直接运行：`python -m src.train.contrastive.run_pretrain`。
     """
     # 训练用的CSV文件列表（可选）。留None表示按目录扫描
-    csv = None
+    csv = [r'/data6/zwang/emoji-finegrained-emotion/data/vendor/crawl/cleaned_combined.csv']  # 单一整合CSV
     # CSV目录（默认扫描 cleaned 目录） —— 注意使用项目相对路径（无项目名前缀）
     csv_dir = r'data\vendor\crawl\cleaned'
     # 额外的合并CSV（可选）
@@ -42,11 +46,11 @@ class Args:
     sentinel_token = '[EMOJI]'
     text_field = 'sentence'         # 使用 `sentence` 字段；如需用 `message` 可改为 'message'
     # 训练参数
-    epochs = 40                        # 默认训练轮次提升（可按需再增至60）
+    epochs = 70                        # 中文说明：默认训练70轮，便于在50/70做策略决策
     batch_size = 160                   # 默认批大小提升，若显存不足可下调
     num_workers = 12                   # 提升并发加载线程（根据IO与CPU调整）
     resume = False
-    val_ratio = 0.1
+    val_ratio = 0.12                   # 中文说明：验证集比例≈12%，与最优trial相近
     save_dir = r'checkpoints'
     use_amp = True                     # 启用AMP混合精度以节省显存、加速训练
     # 文本模型来源：'modelscope' 或 'huggingface'
@@ -58,6 +62,21 @@ class Args:
     tune = True                       # 是否启用调参流程；默认False，开启后运行study.optimize
     n_trials = 30                      # 调参次数提升，扩大探索范围
     trial_epochs = 7                   # 每个trial训练轮数略增，提升评估稳定性
+    # 学习率与投影维度（固定配置，避免命令行参数）
+    text_lr = 2e-5
+    img_lr = 1e-4
+    proj_lr = 1e-3
+    # 中文说明：温度参数（log_tau）使用更高学习率以加快自适应
+    temp_lr = 3e-3
+    proj_dim = 512
+    # 冻结轮数（检索任务按需取消冻结阶段，直接端到端训练）
+    warmup_freeze_epochs = 0  # 中文说明：取消冻结阶段，端到端训练
+    lr_eta_min = 0.0
+    # 中文说明：按步（batch）预热比例（线性 warmup），建议 5%~10%
+    warmup_ratio = 0.1
+    # 温度初值与梯度调试
+    init_temp = 0.05                   # 中文说明：固定温度τ=0.05，避免小数据下不稳定学习
+    debug_grad = False
 
 
 def collect_csvs(args):
@@ -134,76 +153,45 @@ def load_checkpoint(path, model, optimizer):
 
 
 def main():
-    # 中文说明：支持命令行覆盖默认参数，兼容现有 bat 脚本
-    default = Args()
-    parser = argparse.ArgumentParser(description='Text-Emoji 对比学习预训练')
-    # 数据路径相关参数
-    parser.add_argument('--csv', nargs='*', default=None, help='显式CSV列表；不传则按目录扫描')
-    parser.add_argument('--csv-dir', default=default.csv_dir, help='CSV目录（相对项目根或绝对路径）')
-    parser.add_argument('--extra-combined', default=default.extra_combined, help='附加合并CSV路径')
-    parser.add_argument('--cache-dir', default=default.cache_dir, help='图片缓存目录')
-    parser.add_argument('--emoji-map', default=default.emoji_map, help='本地emoji映射JSON')
-    parser.add_argument('--name-image-map', default=default.name_image_map, help='图片-表情名映射CSV')
-    parser.add_argument('--prefer-local-emoji', action='store_true', default=default.prefer_local_emoji, help='优先使用本地emoji图片')
-    parser.add_argument('--local-only', action='store_true', default=default.local_only, help='严格只用本地图片')
-    parser.add_argument('--text-sentinel', action='store_true', default=default.text_sentinel, help='启用文本哨兵替换')
-    parser.add_argument('--sentinel-token', default=default.sentinel_token, help='哨兵token文本')
-    parser.add_argument('--text-field', default=default.text_field, help='文本字段名')
-    # 训练与运行参数
-    parser.add_argument('--epochs', type=int, default=default.epochs, help='训练轮数')
-    parser.add_argument('--batch-size', type=int, default=default.batch_size, help='批大小')
-    parser.add_argument('--num-workers', type=int, default=default.num_workers, help='DataLoader并发数')
-    parser.add_argument('--resume', action='store_true', default=default.resume, help='是否断点续训')
-    parser.add_argument('--val-ratio', type=float, default=default.val_ratio, help='验证集比例')
-    parser.add_argument('--save-dir', default=default.save_dir, help='检查点保存目录')
-    parser.add_argument('--use-amp', action='store_true', default=default.use_amp, help='启用混合精度')
-    # 学习率与投影维度（新增可配置项）
-    parser.add_argument('--text-lr', type=float, default=2e-5, help='文本编码器学习率')
-    parser.add_argument('--img-lr', type=float, default=1e-4, help='图片编码器学习率')
-    parser.add_argument('--proj-lr', type=float, default=1e-3, help='投影头与温度学习率')
-    parser.add_argument('--proj-dim', type=int, default=512, help='文本/图片投影维度')  # 中文说明：默认提升到512维
-    # 文本模型来源
-    parser.add_argument('--text-model-source', choices=['modelscope', 'huggingface'], default=default.text_model_source, help='文本模型来源')
-    parser.add_argument('--modelscope-id', default=default.modelscope_id, help='ModelScope模型ID')
-    parser.add_argument('--hf-model-name', default=default.hf_model_name, help='HuggingFace模型名')
-    # Optuna 调参
-    parser.add_argument('--tune', action='store_true', default=default.tune, help='是否启用Optuna调参')
-    parser.add_argument('--n-trials', type=int, default=default.n_trials, help='调参trial次数')
-    parser.add_argument('--trial-epochs', type=int, default=default.trial_epochs, help='每个trial训练轮数')
+    # 中文说明：一键运行版本。配置源自 Args 常量，不依赖命令行参数。
+    args = Args()
+    # 中文说明：支持通过环境变量覆盖训练数据路径与映射文件，便于服务器直接指定绝对路径
+    # 1) EMOJI_CSV：指定单个“整合的完整CSV”（例如 cleaned_combined.csv）
+    # 2) EMOJI_CSV_DIR：指定CSV目录（将扫描该目录下所有 .csv）
+    # 3) EMOJI_MAP_JSON：指定本地 emoji 映射 JSON（name/emoji → local_path）
+    # 4) EMOJI_NAME_IMAGE_MAP：指定 name → local_path 的映射 CSV
+    env_csv = os.getenv('EMOJI_CSV', '').strip()
+    env_csv_dir = os.getenv('EMOJI_CSV_DIR', '').strip()
+    if env_csv:
+        # 中文说明：若指定单一整合CSV，优先使用该文件，并关闭 extra_combined 以避免重复
+        if os.path.exists(env_csv):
+            args.csv = [env_csv]                # 仅读取该CSV文件
+            args.extra_combined = ''            # 关闭额外合并CSV防止重复读取
+            print(f"[info] 使用环境变量 EMOJI_CSV 指定的整合CSV：{env_csv}")
+        else:
+            print(f"[warn] EMOJI_CSV 指定的文件不存在：{env_csv}")
+    elif env_csv_dir:
+        # 中文说明：若指定目录，则扫描该目录下所有CSV
+        if os.path.isdir(env_csv_dir):
+            args.csv_dir = env_csv_dir
+            print(f"[info] 使用环境变量 EMOJI_CSV_DIR 指定的目录：{env_csv_dir}")
+        else:
+            print(f"[warn] EMOJI_CSV_DIR 指定的目录不存在：{env_csv_dir}")
 
-    cli = parser.parse_args()
-    # 将命令行参数应用到 args 对象（保留默认作为后备）
-    args = default
-    args.csv = cli.csv
-    args.csv_dir = cli.csv_dir
-    args.extra_combined = cli.extra_combined
-    args.cache_dir = cli.cache_dir
-    args.emoji_map = cli.emoji_map
-    args.name_image_map = cli.name_image_map
-    args.prefer_local_emoji = cli.prefer_local_emoji
-    args.local_only = cli.local_only
-    args.text_sentinel = cli.text_sentinel
-    args.sentinel_token = cli.sentinel_token
-    args.text_field = cli.text_field
-    args.epochs = cli.epochs
-    args.batch_size = cli.batch_size
-    args.num_workers = cli.num_workers
-    args.resume = cli.resume
-    args.val_ratio = cli.val_ratio
-    args.save_dir = cli.save_dir
-    args.use_amp = cli.use_amp
-    args.text_model_source = cli.text_model_source
-    args.modelscope_id = cli.modelscope_id
-    args.hf_model_name = cli.hf_model_name
-    args.tune = cli.tune
-    args.n_trials = cli.n_trials
-    args.trial_epochs = cli.trial_epochs
-    # 新增：学习率与投影维度
-    args.text_lr = cli.text_lr
-    args.img_lr = cli.img_lr
-    args.proj_lr = cli.proj_lr
-    args.proj_dim = cli.proj_dim
+    # 中文说明：映射文件的环境变量覆盖（如果提供且存在则使用）
+    env_map_json = os.getenv('EMOJI_MAP_JSON', '').strip()
+    env_name_img_map = os.getenv('EMOJI_NAME_IMAGE_MAP', '').strip()
+    if env_map_json and os.path.exists(env_map_json):
+        args.emoji_map = env_map_json
+        print(f"[info] 使用环境变量 EMOJI_MAP_JSON：{env_map_json}")
+    if env_name_img_map and os.path.exists(env_name_img_map):
+        args.name_image_map = env_name_img_map
+        print(f"[info] 使用环境变量 EMOJI_NAME_IMAGE_MAP：{env_name_img_map}")
+    warmup_freeze_epochs = args.warmup_freeze_epochs
+    eta_min = args.lr_eta_min
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # 中文说明：AMP仅在CUDA设备可用时启用，避免CPU环境下出错
+    enable_amp = args.use_amp and (device.type == 'cuda')
     # 中文说明：启用cudnn benchmark优化卷积选择；对稳定输入尺寸场景有加速
     if device.type == 'cuda':
         torch.backends.cudnn.benchmark = True
@@ -263,6 +251,33 @@ def main():
     try:
         stats = ds.stats
         print(f"[info] 数据集统计：总行={stats['total_rows']} 保留={stats['kept_rows']} 丢弃={stats['dropped_rows']} 本地={stats['local_image_rows']} 远程={stats['remote_image_rows']} 缺失本地图片={stats.get('missing_rows', 0)}")
+        # 中文说明：补充数据加载体检：
+        # 1) 映射规模（name/emoji键数量）；2) 唯一图片数与重复率；3) 文本样例与长度分布近似
+        try:
+            name_keys = len(getattr(ds, 'emoji_map_by_name', {}) or {})
+            emoji_keys = len(getattr(ds, 'emoji_map_by_emoji', {}) or {})
+            print(f"[info] 映射规模：by_name={name_keys} by_emoji={emoji_keys}")
+        except Exception:
+            pass
+        try:
+            from collections import Counter
+            paths = [r['image_path'] for r in ds.rows]
+            c = Counter(paths)
+            unique_images = len(c)
+            dup_images = sum(1 for _, v in c.items() if v > 1)
+            dup_ratio = (sum(v - 1 for v in c.values()) / max(1, len(paths)))
+            print(f"[info] 图片唯一数={unique_images} 重复图片数={dup_images} 重复样本比例={dup_ratio:.4f}")
+        except Exception:
+            pass
+        try:
+            # 打印前5条文本样例（截断展示），确认哨兵/表情名处理是否符合预期
+            sample_n = min(5, len(ds.rows))
+            for i in range(sample_n):
+                t = ds.rows[i]['text']
+                p = ds.rows[i]['image_path']
+                print(f"[sample#{i}] text='{t[:80]}' | image_path='{p}' | exists={os.path.exists(p)}")
+        except Exception:
+            pass
     except Exception:
         pass
 
@@ -312,23 +327,60 @@ def main():
     else:
         val_dl = None
 
-    # 模型
-    model = TextEmojiContrastive(proj_dim=args.proj_dim).to(device)  # 中文说明：提升默认投影维度至512
-    # 中文说明：冷启动阶段冻结编码器，先训练投影头以稳定对齐；后续再解冻
-    warmup_freeze_epochs = 1
+    # 中文说明：快速检查一个batch的形状与取值范围，排除数据管道错误
+    try:
+        b = next(iter(train_dl))
+        ids = b['input_ids']
+        mask = b['attention_mask']
+        img = b['image']
+        print(f"[sanity] batch shapes: input_ids={tuple(ids.shape)} attention_mask={tuple(mask.shape)} image={tuple(img.shape)}")
+        # 简要统计：文本长度均值/最大值；图片像素均值/方差（已归一化后）
+        try:
+            lens = mask.sum(dim=1).float()
+            print(f"[sanity] text length: mean={lens.mean().item():.1f} max={lens.max().item():.0f}")
+        except Exception:
+            pass
+        try:
+            print(f"[sanity] image norm stats: mean={img.mean().item():.4f} std={img.std(unbiased=False).item():.4f}")
+        except Exception:
+            pass
+    except Exception:
+        pass
 
-    # 参数分组：不同模块不同学习率
-    # 中文说明：使用可配置学习率，默认略提速；必要时通过命令行覆盖
+    # 模型
+    model = TextEmojiContrastive(proj_dim=args.proj_dim, init_tau=args.init_temp).to(device)  # 中文说明：投影维度=512；温度初始固定为0.05
+    # ===== 固定温度τ：不参与训练，避免学习失控 =====
+    import math
+    try:
+        model.log_tau.data = torch.tensor(math.log(0.05), dtype=torch.float32, device=model.log_tau.device)
+    except Exception:
+        model.log_tau.data = torch.tensor(math.log(0.05), dtype=torch.float32)
+    model.log_tau.requires_grad = False  # 中文说明：冻结温度参数，移出优化器
+    # 中文说明：冷启动阶段冻结编码器，先训练投影头以稳定对齐；后续再解冻
+    # 冻结轮数改为可配置：warmup_freeze_epochs（默认1，可通过CLI覆盖）
+
+    # 参数分组：不同模块不同学习率（已移除 log_tau 参数组）
     param_groups = [
         {'params': model.text_encoder.parameters(), 'lr': args.text_lr, 'weight_decay': 0.01},   # 文本编码器
         {'params': model.img_encoder.parameters(),  'lr': args.img_lr,  'weight_decay': 0.01},   # 图片编码器
-        {'params': list(model.text_proj.parameters()) + list(model.img_proj.parameters()) + [model.log_tau],
-         'lr': args.proj_lr, 'weight_decay': 0.0}                                               # 投影头与温度
+        {'params': list(model.text_proj.parameters()) + list(model.img_proj.parameters()),
+         'lr': args.proj_lr, 'weight_decay': 0.0}                                                # 投影头
     ]
     optimizer = AdamW(param_groups)
-    # 中文说明：加入余弦退火学习率调度，帮助稳定训练并提升检索性能
-    from torch.optim.lr_scheduler import CosineAnnealingLR
-    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs)
+    # 中文说明：改用“按步”的顺序调度器：线性 warmup（按 warmup_ratio）→ 余弦退火
+    # 计算总步数（近似为每轮的batch数乘以轮数）
+    import math
+    steps_per_epoch = max(1, len(train_dl))
+    total_steps = steps_per_epoch * args.epochs
+    warmup_steps = max(1, int(total_steps * args.warmup_ratio))
+    from torch.optim.lr_scheduler import LinearLR, SequentialLR, CosineAnnealingLR
+    warmup = LinearLR(optimizer, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps)  # 中文说明：线性从极低LR升至基准LR
+    cosine = CosineAnnealingLR(
+        optimizer,
+        T_max=max(1, int((total_steps - warmup_steps) * 1.5)),  # 中文说明：扩展余弦总步数×1.5，避免前期LR过快衰减
+        eta_min=eta_min
+    )
+    scheduler = SequentialLR(optimizer, schedulers=[warmup, cosine], milestones=[warmup_steps])
 
     # 检查点路径
     last_path = os.path.join(args.save_dir, 'pretrain_last.pt')
@@ -344,7 +396,7 @@ def main():
     # 如果启用Optuna调参，则运行study并根据最佳trial进行一次完整训练；否则直接常规训练
     if args.tune:
         def objective(trial: optuna.Trial):
-            # 中文说明：每个trial采样一组超参数，并在较少轮次下训练评估R@1
+            # 中文说明：每个trial采样一组超参数，并在较少轮次下训练评估 Top-1/Top-5
             # 采样空间可根据A6000与数据规模调整
             # 中文说明：扩展搜索空间（批大小、学习率、权重衰减、投影维度、验证比例），更充分探索
             bsz = trial.suggest_categorical('batch_size', [128, 160, 192, 224, 256])
@@ -381,27 +433,57 @@ def main():
 
             # 为每个trial新建模型与优化器
             # 中文说明：按trial采样的投影维度构建模型
-            m = TextEmojiContrastive(proj_dim=proj_dim).to(device)
+            m = TextEmojiContrastive(proj_dim=proj_dim, init_tau=args.init_temp).to(device)
+            # ===== 冻结温度τ（trial阶段也不学习）=====
+            try:
+                m.log_tau.data = torch.tensor(math.log(0.05), dtype=torch.float32, device=m.log_tau.device)
+            except Exception:
+                m.log_tau.data = torch.tensor(math.log(0.05), dtype=torch.float32)
+            m.log_tau.requires_grad = False
             pg = [
                 {'params': m.text_encoder.parameters(), 'lr': text_lr, 'weight_decay': enc_wd},
                 {'params': m.img_encoder.parameters(), 'lr': img_lr, 'weight_decay': enc_wd},
-                {'params': list(m.text_proj.parameters()) + list(m.img_proj.parameters()) + [m.log_tau],
+                {'params': list(m.text_proj.parameters()) + list(m.img_proj.parameters()),
                  'lr': proj_lr, 'weight_decay': head_wd}
             ]
             opt = AdamW(pg)
+            # 中文说明：trial 阶段同样采用按步 warmup+cosine 调度器，确保与主训练一致
+            steps_per_epoch_trial = max(1, len(t_dl))
+            total_steps_trial = steps_per_epoch_trial * args.trial_epochs
+            warmup_steps_trial = max(1, int(total_steps_trial * args.warmup_ratio))
+            from torch.optim.lr_scheduler import LinearLR, SequentialLR, CosineAnnealingLR
+            warmup_t = LinearLR(opt, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps_trial)
+            cosine_t = CosineAnnealingLR(
+                opt,
+                T_max=max(1, int((total_steps_trial - warmup_steps_trial) * 1.5)),  # 中文说明：扩展余弦总步数×1.5
+                eta_min=eta_min
+            )
+            trial_scheduler = SequentialLR(opt, schedulers=[warmup_t, cosine_t], milestones=[warmup_steps_trial])
 
-            best_acc = 0.0
+            best_acc = 0.0  # 追踪 Top-1 最优
             # 仅训练较少轮次，加速搜索
             for ep in range(args.trial_epochs):
-                # 中文说明：前 w_ep 轮冻结编码器，稳定投影层训练
-                enc_trainable = ep >= w_ep
+                # 中文说明：检索任务取消冻结阶段，直接端到端训练
                 for p in m.text_encoder.parameters():
-                    p.requires_grad = enc_trainable
+                    p.requires_grad = True
                 for p in m.img_encoder.parameters():
-                    p.requires_grad = enc_trainable
+                    p.requires_grad = True
                 try:
-                    loss_ep = train_one_epoch(m, t_dl, opt, device, use_amp=args.use_amp)
-                    acc_ep = eval_retrieval(m, v_dl if v_dl is not None else t_dl, device, use_amp=args.use_amp)
+                    # 中文说明：每轮先构建一次全局原型库（使用数据集唯一图片 → 向量）
+                    prototypes = build_emoji_prototypes(m, ds, device, use_amp=enable_amp)
+                    # 中文说明：按步调度器在训练函数内部每个batch推进，无需此处调用 step()
+                    loss_ep = train_one_epoch_retrieval(
+                        m, t_dl, opt, device, prototypes,
+                        use_amp=enable_amp, scheduler=trial_scheduler,
+                        debug_grad=args.debug_grad,
+                        mix_weights=(1.0, 0.3), tri_margin=0.2, top_k=10
+                    )
+                    # 评估 Top-1/Top-5
+                    metrics = eval_topk_accuracy(
+                        m, v_dl if v_dl is not None else t_dl, device, prototypes,
+                        use_amp=enable_amp, top_k=(1, 5)
+                    )
+                    acc_ep = float(metrics.get('top1', 0.0))
                 except RuntimeError as e:
                     # 中文说明：捕获OOM等异常，清空显存并剪枝该trial，避免整个study中断
                     if 'out of memory' in str(e).lower():
@@ -456,69 +538,211 @@ def main():
             )
         # 使用最佳投影维度重建模型（中文说明：让最终训练与trial设定一致）
         if 'proj_dim' in best:
-            model = TextEmojiContrastive(proj_dim=best['proj_dim']).to(device)
+            model = TextEmojiContrastive(proj_dim=best['proj_dim'], init_tau=args.init_temp).to(device)
+        # ===== 确保最终训练也冻结温度τ =====
+        try:
+            model.log_tau.data = torch.tensor(math.log(0.05), dtype=torch.float32, device=model.log_tau.device)
+        except Exception:
+            model.log_tau.data = torch.tensor(math.log(0.05), dtype=torch.float32)
+        model.log_tau.requires_grad = False
         # 根据最佳权重衰减与学习率重建优化器
         enc_wd_best = best.get('enc_weight_decay', 0.01)
         head_wd_best = best.get('head_weight_decay', 0.0)
+        # 中文说明：重建优化器参数分组，保持 log_tau 独立参数组（零权重衰减）与较高学习率，避免“静默杀死”
         optimizer = AdamW([
             {'params': model.text_encoder.parameters(), 'lr': best['text_lr'], 'weight_decay': enc_wd_best},
-            {'params': model.img_encoder.parameters(), 'lr': best['img_lr'], 'weight_decay': enc_wd_best},
-            {'params': list(model.text_proj.parameters()) + list(model.img_proj.parameters()) + [model.log_tau],
+            {'params': model.img_encoder.parameters(),  'lr': best['img_lr'],  'weight_decay': enc_wd_best},
+            {'params': list(model.text_proj.parameters()) + list(model.img_proj.parameters()),
              'lr': best['proj_lr'], 'weight_decay': head_wd_best}
         ])
-        # 中文说明：重建学习率调度器，使其绑定新的优化器
-        from torch.optim.lr_scheduler import CosineAnnealingLR
-        scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs)
+        # 中文说明：重建按步 warmup+cosine 调度器（与最佳超参对应的DataLoader步数）
+        steps_per_epoch = max(1, len(train_dl))
+        total_steps = steps_per_epoch * args.epochs
+        warmup_steps = max(1, int(total_steps * args.warmup_ratio))
+        from torch.optim.lr_scheduler import LinearLR, SequentialLR, CosineAnnealingLR
+        warmup = LinearLR(optimizer, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps)
+        cosine = CosineAnnealingLR(
+            optimizer,
+            T_max=max(1, int((total_steps - warmup_steps) * 1.5)),  # 中文说明：扩展余弦总步数×1.5
+            eta_min=eta_min
+        )
+        scheduler = SequentialLR(optimizer, schedulers=[warmup, cosine], milestones=[warmup_steps])
         # 若trial包含冻结轮数则应用到完整训练
         if 'warmup_freeze_epochs' in best:
             warmup_freeze_epochs = int(best['warmup_freeze_epochs'])
 
-        # 完整训练并保存best/last与最终权重
+        # 完整训练并保存best/last与最终权重（按 Top-1 衡量）
+        last_acc = 0.0  # 中文说明：记录最后一次Top-1，用于70轮决策
         for epoch in range(start_epoch, args.epochs):
-            # 冻结/解冻策略：前 warmup_freeze_epochs 轮冻结编码器参数
-            enc_trainable = epoch >= warmup_freeze_epochs
+            # 中文说明：检索任务取消冻结阶段，始终端到端训练
             for p in model.text_encoder.parameters():
-                p.requires_grad = enc_trainable
+                p.requires_grad = True
             for p in model.img_encoder.parameters():
-                p.requires_grad = enc_trainable
-            if epoch == 0:
-                print(f"[info] 冻结编码器进行投影头预训练：epochs={warmup_freeze_epochs}")
-            if epoch == warmup_freeze_epochs:
-                print("[info] 解冻编码器，开始端到端训练")
-            loss = train_one_epoch(model, train_dl, optimizer, device, use_amp=args.use_amp)
-            scheduler.step()
-            acc = eval_retrieval(model, val_dl if val_dl is not None else train_dl, device, use_amp=args.use_amp)
-            print(f"epoch={epoch} loss={loss:.4f} R@1={acc:.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
+                p.requires_grad = True
+            # 中文说明：打印当前可训练参数规模（解冻后约应为≈20M），用于确认 requires_grad 生效
+            try:
+                trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+                print(f"[info] 可训练参数: {trainable_params/1e6:.1f}M")
+            except Exception:
+                pass
+            # 中文说明：每轮重建一次全局原型库（注入图片增强多样性）
+            prototypes = build_emoji_prototypes(model, ds, device, use_amp=enable_amp)
+            # 中文说明：按步调度器在训练函数内部推进，无需此处调用 step()
+            loss = train_one_epoch_retrieval(
+                model, train_dl, optimizer, device, prototypes,
+                use_amp=enable_amp, scheduler=scheduler, debug_grad=args.debug_grad,
+                mix_weights=(1.0, 0.3), tri_margin=0.2, top_k=10
+            )
+            # 评估 Top-1/Top-5
+            metrics = eval_topk_accuracy(
+                model, val_dl if val_dl is not None else train_dl, device, prototypes,
+                use_amp=enable_amp, top_k=(1, 5)
+            )
+            acc = float(metrics.get('top1', 0.0))
+            last_acc = acc  # 中文说明：更新最后一次Top-1
+            # 中文说明：打印当前温度（tau）以便观察是否在合理范围（0.01~0.1）并逐步学习
+            try:
+                current_tau = float(torch.exp(model.log_tau).item())
+            except Exception:
+                current_tau = float('nan')
+            print(f"epoch={epoch} loss={loss:.4f} top1={acc:.4f} top5={metrics.get('top5', 0.0):.4f} tau={current_tau:.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
+            # ===== Checkpoint 1：第50轮决策 =====
+            if (epoch + 1) == 50:
+                if acc > 0.25 and loss < 3.5:
+                    print("[checkpoint-50] 指标良好：继续训练到70。")
+                elif acc < 0.20 or loss > 4.0:
+                    print("[checkpoint-50] 指标低/损失高：提前终止训练，请检查文本增强或温度设置。")
+                    break
+                else:
+                    print("[checkpoint-50] 指标一般：继续到70，但不建议额外续训。")
             save_checkpoint(last_path, model, optimizer, epoch + 1, best_metric)
             if acc >= best_metric:
                 best_metric = acc
                 save_checkpoint(best_path, model, optimizer, epoch + 1, best_metric)
-                print(f"[info] 更新best检查点：R@1={best_metric:.4f}")
+                print(f"[info] 更新best检查点：Top-1={best_metric:.4f}")
+
+        # ===== Checkpoint 2：第70轮后的决策与可选微调 =====
+        final_acc = last_acc
+        if final_acc > 0.35:
+            more = 20 if final_acc > 0.40 else 10
+            print(f"[checkpoint-70] Top-1={final_acc:.4f}，计划额外微调 {more} epoch（监控过拟合）。")
+            drop_patience = 0
+            for e2 in range(args.epochs, args.epochs + more):
+                prototypes = build_emoji_prototypes(model, ds, device, use_amp=enable_amp)
+                loss2 = train_one_epoch_retrieval(
+                    model, train_dl, optimizer, device, prototypes,
+                    use_amp=enable_amp, scheduler=None, debug_grad=args.debug_grad,
+                    mix_weights=(1.0, 0.3), tri_margin=0.2, top_k=10
+                )
+                metrics2 = eval_topk_accuracy(
+                    model, val_dl if val_dl is not None else train_dl, device, prototypes,
+                    use_amp=enable_amp, top_k=(1, 5)
+                )
+                acc2 = float(metrics2.get('top1', 0.0))
+                print(f"epoch={e2} loss={loss2:.4f} top1={acc2:.4f} top5={metrics2.get('top5', 0.0):.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
+                save_checkpoint(last_path, model, optimizer, e2, best_metric)
+                if acc2 >= best_metric:
+                    best_metric = acc2
+                    save_checkpoint(best_path, model, optimizer, e2, best_metric)
+                    print(f"[info] 更新best检查点：Top-1={best_metric:.4f}")
+                    drop_patience = 0
+                else:
+                    if (best_metric - acc2) > 0.02:
+                        print(f"[early-stop] 验证Top-1较最佳下降>2%：{best_metric:.4f}→{acc2:.4f}，提前停止微调。")
+                        break
+                    drop_patience += 1
+                    if drop_patience >= 2:
+                        print("[early-stop] 验证Top-1连续下降，提前停止微调。")
+                        break
+        elif 0.28 <= final_acc <= 0.35:
+            print(f"[checkpoint-70] Top-1={final_acc:.4f}，不建议继续（数据潜力基本耗尽）。")
+        else:
+            print(f"[checkpoint-70] Top-1={final_acc:.4f}，停止训练。")
 
         os.makedirs(args.save_dir, exist_ok=True)
         raw_model_path = os.path.join(args.save_dir, 'text_emoji_clip_roberta_efficientnetlite0.pt')
         torch.save(model.state_dict(), raw_model_path)
         print(f"[info] 预训练完成，模型权重已保存：{raw_model_path}")
     else:
-        # 训练若干epoch，并做简单检索评估（R@1）
+        # 常规训练：检索任务（Top-1/Top-5）
+        last_acc = 0.0  # 中文说明：记录最后一次Top-1，用于70轮决策
         for epoch in range(start_epoch, args.epochs):
-            # 中文说明：训练阶段启用AMP（若use_amp=True）
-            loss = train_one_epoch(model, train_dl, optimizer, device, use_amp=args.use_amp)
-            if val_dl is not None:
-                # 评估阶段也可使用autocast减小显存占用
-                acc = eval_retrieval(model, val_dl, device, use_amp=args.use_amp)
-            else:
-                acc = eval_retrieval(model, train_dl, device, use_amp=args.use_amp)  # 若无验证集，用训练集近似评估
-            print(f"epoch={epoch} loss={loss:.4f} R@1={acc:.4f}")
+            # 中文说明：每轮重建一次全局原型库，用于CE分类与Triplet排序
+            prototypes = build_emoji_prototypes(model, ds, device, use_amp=enable_amp)
+            # 中文说明：训练阶段启用AMP（若use_amp=True）；调度器在函数内推进
+            loss = train_one_epoch_retrieval(
+                model, train_dl, optimizer, device, prototypes,
+                use_amp=enable_amp, scheduler=scheduler, debug_grad=args.debug_grad,
+                mix_weights=(1.0, 0.3), tri_margin=0.2, top_k=10
+            )
+            # 评估阶段：Top-1/Top-5
+            metrics = eval_topk_accuracy(
+                model, val_dl if val_dl is not None else train_dl, device, prototypes,
+                use_amp=enable_amp, top_k=(1, 5)
+            )
+            acc = float(metrics.get('top1', 0.0))
+            last_acc = acc  # 中文说明：更新最后一次Top-1
+            try:
+                current_tau = float(torch.exp(model.log_tau).item())
+            except Exception:
+                current_tau = float('nan')
+            print(f"epoch={epoch} loss={loss:.4f} top1={acc:.4f} top5={metrics.get('top5', 0.0):.4f} tau={current_tau:.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
+            # ===== Checkpoint 1：第50轮决策 =====
+            if (epoch + 1) == 50:
+                if acc > 0.25 and loss < 3.5:
+                    print("[checkpoint-50] 指标良好：继续训练到70。")
+                elif acc < 0.20 or loss > 4.0:
+                    print("[checkpoint-50] 指标低/损失高：提前终止训练，请检查文本增强或温度设置。")
+                    break
+                else:
+                    print("[checkpoint-50] 指标一般：继续到70，但不建议额外续训。")
 
             # 保存last检查点（每轮保存），避免中断丢失进度
             save_checkpoint(last_path, model, optimizer, epoch + 1, best_metric)
 
-            # 若指标更好则更新best检查点
+            # 若指标更好则更新best检查点（按Top-1）
             if acc >= best_metric:
                 best_metric = acc
                 save_checkpoint(best_path, model, optimizer, epoch + 1, best_metric)
-                print(f"[info] 更新best检查点：R@1={best_metric:.4f}")
+                print(f"[info] 更新best检查点：Top-1={best_metric:.4f}")
+
+        # ===== Checkpoint 2：第70轮后的决策与可选微调 =====
+        final_acc = last_acc
+        if final_acc > 0.35:
+            more = 20 if final_acc > 0.40 else 10
+            print(f"[checkpoint-70] Top-1={final_acc:.4f}，计划额外微调 {more} epoch（监控过拟合）。")
+            drop_patience = 0
+            for e2 in range(args.epochs, args.epochs + more):
+                prototypes = build_emoji_prototypes(model, ds, device, use_amp=enable_amp)
+                loss2 = train_one_epoch_retrieval(
+                    model, train_dl, optimizer, device, prototypes,
+                    use_amp=enable_amp, scheduler=None, debug_grad=args.debug_grad,
+                    mix_weights=(1.0, 0.3), tri_margin=0.2, top_k=10
+                )
+                metrics2 = eval_topk_accuracy(
+                    model, val_dl if val_dl is not None else train_dl, device, prototypes,
+                    use_amp=enable_amp, top_k=(1, 5)
+                )
+                acc2 = float(metrics2.get('top1', 0.0))
+                print(f"epoch={e2} loss={loss2:.4f} top1={acc2:.4f} top5={metrics2.get('top5', 0.0):.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
+                save_checkpoint(last_path, model, optimizer, e2, best_metric)
+                if acc2 >= best_metric:
+                    best_metric = acc2
+                    save_checkpoint(best_path, model, optimizer, e2, best_metric)
+                    print(f"[info] 更新best检查点：Top-1={best_metric:.4f}")
+                    drop_patience = 0
+                else:
+                    if (best_metric - acc2) > 0.02:
+                        print(f"[early-stop] 验证Top-1较最佳下降>2%：{best_metric:.4f}→{acc2:.4f}，提前停止微调。")
+                        break
+                    drop_patience += 1
+                    if drop_patience >= 2:
+                        print("[early-stop] 验证Top-1连续下降，提前停止微调。")
+                        break
+        elif 0.28 <= final_acc <= 0.35:
+            print(f"[checkpoint-70] Top-1={final_acc:.4f}，不建议继续（数据潜力基本耗尽）。")
+        else:
+            print(f"[checkpoint-70] Top-1={final_acc:.4f}，停止训练。")
 
         # 完成后额外保存纯模型权重（便于微调加载）
         os.makedirs(args.save_dir, exist_ok=True)

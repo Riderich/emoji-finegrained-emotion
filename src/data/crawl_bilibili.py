@@ -42,7 +42,6 @@ import argparse
 from datetime import datetime, timezone
 import re
 import json
-
 import requests
 import random
 from typing import Optional
@@ -328,8 +327,21 @@ def fetch_replies_main_by_aid(session: requests.Session, aid: int, next_cursor: 
     }
     try:
         resp = session.get(url, params=params, timeout=10)
-        resp.raise_for_status()
-        return resp.json()
+        status = resp.status_code
+        if status in (412, 429):
+            preview = ""
+            try:
+                preview = resp.text[:120]
+            except Exception:
+                pass
+            print(f"[rate-limit] reply.main 限流 status={status} aid={aid} next={next_cursor} ps={ps}，20秒后重试。片段: {preview}")
+            return {"code": status, "message": "rate_limited"}
+        if status != 200:
+            return {}
+        try:
+            return resp.json()
+        except Exception:
+            return {}
     except Exception:
         return {}
 
@@ -511,7 +523,7 @@ def crawl_bilibili_for_bvid(session: requests.Session, bvid: str, max_pages: int
         return all_rows
 
     for pn in range(1, max_pages + 1):
-        # 中文行间注释：为每一页抓取增加“限流自适应”重试机制——遇到 412/429 等限流状态，等待10秒后重试当前页
+        # 中文行间注释：为每一页抓取增加“限流自适应”重试机制——遇到 412/429 等限流状态，等待20秒后重试当前页
         stop_this_bv = False
         attempts = 0
         while True:
@@ -524,15 +536,16 @@ def crawl_bilibili_for_bvid(session: requests.Session, bvid: str, max_pages: int
                 stop_this_bv = True
                 break
             if not data or code_prim != 0:
-                # 中文行间注释：限流状态（412/429），等待10秒后重试当前页；最多重试5次
+                # 中文行间注释：限流状态（412/429），等待20秒后重试当前页；最多重试3次
                 if code_prim in (412, 429):
-                    print(f"[rate-limit] bvid={bvid} aid={aid} pn={pn} code={code_prim}，10秒后重试当前页。")
-                    time.sleep(10)
+                    print(f"[rate-limit] bvid={bvid} aid={aid} pn={pn} code={code_prim}，20秒后重试当前页。")
+                    time.sleep(20)
                     attempts += 1
-                    if attempts < 5:
+                    if attempts < 3:
                         continue
                     else:
-                        print(f"[warn] bvid={bvid} aid={aid} pn={pn} 限流重试超过上限，跳过该页。")
+                        print(f"[warn] bvid={bvid} aid={aid} pn={pn} 限流重试超过上限，跳过该BV。")
+                        stop_this_bv = True
                         break
                 # 中文行间注释：其他错误，轻度退避后跳过该页
                 jitter_prim = random.uniform(0.0, sleep_seconds * 0.5)
@@ -543,6 +556,8 @@ def crawl_bilibili_for_bvid(session: requests.Session, bvid: str, max_pages: int
         if stop_this_bv:
             break
 
+        if stop_this_bv:
+            break
         payload = data.get("data") or {}
         replies = payload.get("replies") or []
         page_info = payload.get("page") or {}
@@ -550,6 +565,13 @@ def crawl_bilibili_for_bvid(session: requests.Session, bvid: str, max_pages: int
             print(f"[debug] bvid={bvid} aid={aid} pn={pn} page.count={page_info.get('count', 0)} replies.len={len(replies)}")
         except Exception:
             pass
+
+        if pn == 1 and not replies:
+            print(f"[info] bvid={bvid} 首页回复为0，跳过该BV")
+            break
+        if not replies:
+            print(f"[info] bvid={bvid} pn={pn} 当前页无回复，提前停止该BV")
+            break
 
         for item in replies:
             rows = extract_rows_from_reply_item(bvid, item)
@@ -722,6 +744,7 @@ def crawl_bilibili_for_bvid_mapped(session: requests.Session, bvid: str, max_pag
 
     for pn in range(1, max_pages + 1):
         attempts = 0
+        stop_this_bv = False
         while True:
             data = fetch_replies_page_by_aid(session, aid, pn, bvid_referer=bvid)
             code = (data or {}).get("code")
@@ -732,19 +755,22 @@ def crawl_bilibili_for_bvid_mapped(session: requests.Session, bvid: str, max_pag
                 break
             if not data or code != 0:
                 if code in (412, 429):
-                    print(f"[rate-limit] bvid={bvid} aid={aid} pn={pn} code={code}，10秒后重试当前页。")
-                    time.sleep(10)
+                    print(f"[rate-limit] bvid={bvid} aid={aid} pn={pn} code={code}，20秒后重试当前页。")
+                    time.sleep(20)
                     attempts += 1
-                    if attempts < 5:
+                    if attempts < 3:
                         continue
                     else:
-                        print(f"[warn] bvid={bvid} aid={aid} pn={pn} 限流重试超过上限，跳过该页。")
+                        print(f"[warn] bvid={bvid} aid={aid} pn={pn} 限流重试超过上限，跳过该BV。")
+                        stop_this_bv = True
                         break
                 jitter = random.uniform(0.0, sleep_seconds * 0.5)
                 time.sleep(sleep_seconds + jitter)
                 break
             break
 
+        if stop_this_bv:
+            break
         payload = data.get("data") or {}
         replies = payload.get("replies") or []
 
@@ -754,6 +780,13 @@ def crawl_bilibili_for_bvid_mapped(session: requests.Session, bvid: str, max_pag
             print(f"[debug] bvid={bvid} aid={aid} pn={pn} page.count={page_info.get('count', 0)} replies.len={len(replies)}")
         except Exception:
             pass
+
+        if pn == 1 and not replies:
+            print(f"[info] bvid={bvid} 首页回复为0，跳过该BV")
+            break
+        if not replies:
+            print(f"[info] bvid={bvid} pn={pn} 当前页无回复，提前停止该BV")
+            break
 
         for item in replies:
             rows = extract_rows_from_reply_item_mapped(bvid, item, name_set)
@@ -919,7 +952,7 @@ def main():
     parser.add_argument("--bvids-file", type=str, default="", help="BV 列表文件（CSV含bvid列，或TXT逐行一个BV）")
     parser.add_argument("--max-pages", type=int, default=3, help="每个 BV 抓取的评论页数上限")
     # 中文行间注释：新增分页请求间歇秒数（含随机抖动），避免限流
-    parser.add_argument("--sleep-seconds", type=float, default=0.5, help="分页间歇秒数（含随机抖动，建议≥0.5）；若触发限流将自动等待10秒后重试该页")  # 中文行间注释：根据需求默认降至 0.5s，并在 412/429 时自适应退避 10s
+    parser.add_argument("--sleep-seconds", type=float, default=1.5, help="分页间歇秒数（含随机抖动，建议≥0.5）；若触发限流将自动等待20秒后重试该页")
     parser.add_argument("--output", type=str, default=os.path.join("data", "vendor", "crawl", "bilibili_emoji_sentences.csv"), help="输出 CSV 相对路径")
     parser.add_argument("--print-first-messages", type=int, default=0, help="打印首批评论文本条数（仅打印，不写CSV）")
     parser.add_argument("--sessdata", type=str, default=None, help="可选：B站登录态 SESSDATA，用于提升接口可访问性")
@@ -930,6 +963,9 @@ def main():
     parser.add_argument("--min-per-bvid", type=int, default=0, help="每个 BV 至少写出多少条（仅在启用映射过滤时生效）")
     # 中文行间注释：新增按 BV 单独输出的目录；若提供则每个 BV 写独立 CSV，同时仍可写合并总表
     parser.add_argument("--per-bvid-output-dir", type=str, default=os.path.join("data", "vendor", "crawl", "by_bvid"), help="按 BV 单独输出的目录（相对 root 或绝对路径）")
+    # 中文行间注释：新增分页器选择与每页大小；main 接口支持 ps（常见为 20 或 30）
+    parser.add_argument("--pager", type=str, default="legacy", choices=["legacy", "main"], help="评论分页器：legacy=旧版 x/v2/reply；main=新版 x/v2/reply/main")
+    parser.add_argument("--ps", type=int, default=30, help="每页评论条数（仅在 pager=main 时生效，典型值：20 或 30）")
     # （已移除）OID 模式参数：统一改为仅使用 AID 路径抓取
 
     args = parser.parse_args()
@@ -1020,22 +1056,82 @@ def main():
         if not aid:
             print(f"[warn] crawl_until_min: 无法获取 AID，跳过 BV={bvid}")
             return rows_acc
+
+        # 中文行间注释：当选择新版分页器（reply/main）时，使用游标与 ps 进行分页
+        if args.pager == "main":
+            next_cursor = 0
+            skip_this_bv = False
+            reached_min = False
+            for pn in range(1, args.max_pages + 1):
+                attempts = 0
+                while True:
+                    j = fetch_replies_main_by_aid(session, aid, next_cursor=next_cursor, ps=max(1, min(args.ps, 30)), mode=3)
+                    api_code = j.get("code") if isinstance(j, dict) else None
+                    if not j or (api_code is not None and api_code != 0):
+                        if api_code in (412, 429):
+                            print(f"[rate-limit] bvid={bvid} aid={aid} pn={pn} next={next_cursor} code={api_code}，20秒后重试当前页。")
+                            time.sleep(20)
+                            attempts += 1
+                            if attempts < 3:
+                                continue
+                            else:
+                                print(f"[warn] bvid={bvid} aid={aid} pn={pn} 限流重试超过上限，跳过该BV。")
+                                skip_this_bv = True
+                                break
+                        time.sleep(args.sleep_seconds)
+                        break
+                if skip_this_bv or reached_min:
+                    break
+                    data_main = j.get("data") or {}
+                    replies = data_main.get("replies") or []
+                    cursor = data_main.get("cursor") or {}
+                    page_info = data_main.get("page") or {}
+                    try:
+                        print(f"[debug] bvid={bvid} aid={aid} pn={pn} page.count={page_info.get('count', 0)} replies.len={len(replies)} ps={args.ps}")
+                    except Exception:
+                        pass
+                    if pn == 1 and not replies:
+                        print(f"[info] bvid={bvid} 首页回复为0，跳过该BV")
+                        break
+                    if not replies:
+                        print(f"[info] bvid={bvid} pn={pn} 当前页无回复，提前停止该BV")
+                        break
+
+                    page_rows: list = []
+                    for item in replies:
+                        rows = extract_rows_from_reply_item_mapped(bvid, item, name_set) if name_set else extract_rows_from_reply_item(bvid, item)
+                        if rows:
+                            page_rows.extend(rows)
+                    rows_acc.extend(page_rows)
+                    print(f"[info] bvid={bvid} pn={pn} 筛选后行数={len(page_rows)} 累计={len(rows_acc)}")
+
+                    if args.min_per_bvid and len(rows_acc) >= args.min_per_bvid:
+                        print(f"[info] bvid={bvid} 达到阈值 min-per-bvid={args.min_per_bvid}（pn={pn}）当前累计={len(rows_acc)}")
+                        reached_min = True
+                        break
+
+                    next_new = cursor.get("next") if isinstance(cursor, dict) else None
+                    is_end = cursor.get("is_end") if isinstance(cursor, dict) else None
+                    if is_end or next_new in (None, next_cursor):
+                        break
+                    next_cursor = int(next_new)
+                    time.sleep(args.sleep_seconds)
+            return rows_acc
+
+        # 中文行间注释：旧版分页接口（按 pn 遍历）
+        skip_this_bv = False
         for pn in range(1, args.max_pages + 1):
-            # 中文行间注释：按 AID 抓取本页，Referer 设置为对应视频页
             attempts = 0
             while True:
                 data = fetch_replies_page_by_aid(session, aid, pn, bvid_referer=bvid)
                 api_code = data.get("code") if data else None
-                # 中文说明：增强调试信息——输出接口参数、UA、Cookie预览以及返回的code/message
                 if not data or api_code != 0:
                     try:
                         ua = session.headers.get("User-Agent", "")
                         cookie_preview = _preview_cookie(session)
-                        # 构造调用参数用于打印（简要展示 AID 与页码）
                         dbg_params = {"pn": pn, "type": 1, "oid": aid}
                         api_msg = data.get("message") if isinstance(data, dict) else ""
                         keys = list(data.keys())[:6] if isinstance(data, dict) else []
-                        # 中文说明：-400（超出最大偏移量）表示页码超过实际页数，应提前停止该 BV 的抓取
                         if api_code == -400:
                             print(f"[info] bvid={bvid} aid={aid} pn={pn} 返回-400：超过最大偏移量，停止该BV。")
                         else:
@@ -1043,23 +1139,22 @@ def main():
                         print(f"[debug] params={dbg_params} ua='{ua[:36]}...' cookie='{cookie_preview}' api.code={api_code} api.msg='{api_msg}' json.keys={keys}")
                     except Exception:
                         pass
-                    # -400：页码超过实际页数，直接提前停止该 BV
                     if api_code == -400:
                         break
-                    # 限流状态：等待10秒后重试当前页（最多5次）
                     if api_code in (412, 429):
-                        print(f"[rate-limit] bvid={bvid} aid={aid} pn={pn} code={api_code}，10秒后重试当前页。")
-                        time.sleep(10)
+                        print(f"[rate-limit] bvid={bvid} aid={aid} pn={pn} code={api_code}，20秒后重试当前页。")
+                        time.sleep(20)
                         attempts += 1
-                        if attempts < 5:
+                        if attempts < 3:
                             continue
                         else:
-                            print(f"[warn] bvid={bvid} aid={aid} pn={pn} 限流重试超过上限，跳过该页。")
+                            print(f"[warn] bvid={bvid} aid={aid} pn={pn} 限流重试超过上限，跳过该BV。")
+                            skip_this_bv = True
                             break
-                    # 其他错误：轻度退避后跳过该页
                     time.sleep(args.sleep_seconds)
                     break
-                # 成功拿到数据，退出重试循环
+                break
+            if skip_this_bv:
                 break
             if api_code == -400:
                 break
@@ -1067,13 +1162,18 @@ def main():
             payload = data.get("data") or {}
             replies = payload.get("replies") or []
             page_info = payload.get("page") or {}
-            # 中文行间注释：调试打印当前页的可用回复数
             try:
                 print(f"[debug] bvid={bvid} aid={aid} pn={pn} page.count={page_info.get('count', 0)} replies.len={len(replies)}")
             except Exception:
                 pass
 
-            # 中文行间注释：逐条解析并根据是否提供映射过滤，统计本页写出行数
+            if pn == 1 and not replies:
+                print(f"[info] bvid={bvid} 首页回复为0，跳过该BV")
+                break
+            if not replies:
+                print(f"[info] bvid={bvid} pn={pn} 当前页无回复，提前停止该BV")
+                break
+
             page_rows: list = []
             for item in replies:
                 rows = extract_rows_from_reply_item_mapped(bvid, item, name_set) if name_set else extract_rows_from_reply_item(bvid, item)
@@ -1081,10 +1181,8 @@ def main():
                     page_rows.extend(rows)
 
             rows_acc.extend(page_rows)
-            # 中文行间注释：按要求打印“筛选后行数”与“累计行数”
             print(f"[info] bvid={bvid} pn={pn} 筛选后行数={len(page_rows)} 累计={len(rows_acc)}")
 
-            # 中文行间注释：达到最小条数则提前停止该 BV 的抓取
             if args.min_per_bvid and len(rows_acc) >= args.min_per_bvid:
                 print(f"[info] bvid={bvid} 达到阈值 min-per-bvid={args.min_per_bvid}（pn={pn}）当前累计={len(rows_acc)}")
                 break
@@ -1103,6 +1201,26 @@ def main():
         per_dir = os.path.join(root, per_dir)
     per_dir = os.path.normpath(per_dir)
     os.makedirs(per_dir, exist_ok=True)
+
+    # 预扫描：统计哪些 BV 已存在输出文件，将在抓取阶段被跳过；打印概要以便可见
+    pre_skipped: list[tuple[str, str]] = []
+    pre_pending: list[str] = []
+    for bvid in args.bvids:
+        safe_bvid = re.sub(r"[^A-Za-z0-9._-]", "_", bvid).strip("_")
+        per_out_probe = os.path.join(per_dir, f"bv_{safe_bvid}_emoji_mapped.csv")
+        try:
+            if os.path.exists(per_out_probe) and os.path.getsize(per_out_probe) > 0:
+                pre_skipped.append((bvid, per_out_probe))
+            else:
+                pre_pending.append(bvid)
+        except Exception:
+            pre_pending.append(bvid)
+    print(f"[info] 预扫描：BV总数={len(args.bvids)} 已完成={len(pre_skipped)} 待抓取={len(pre_pending)} 输出目录={per_dir}")
+    if pre_skipped:
+        max_show = 10
+        print(f"[info] 将跳过的已完成BV（示例最多{max_show}条）：")
+        for i, (b, p) in enumerate(pre_skipped[:max_show], 1):
+            print(f"  [{i}] BV={b} -> {p}")
 
     for bvid in args.bvids:
         # 中文行间注释：先计算该 BV 的目标输出文件，用于“已存在则跳过”

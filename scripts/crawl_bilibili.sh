@@ -24,22 +24,23 @@ EMOJI_MAP="${REPO_ROOT}/data/vendor/bilibili_emojiall_map.json"
 
 # 中文说明：搜索/热门与爬取参数
 # 获取模式：search=按关键词搜索；popular=按热门榜分页（更贴近“视频热门度”）
-FETCH_MODE="popular"
+FETCH_MODE="mustwatch"
 FETCH_MAX_PAGES=5        # search: 每关键词页数；popular: 热门榜页数
 FETCH_ORDER="pubdate"    # 仅在search模式下生效：pubdate/view
-FETCH_SLEEP=0.5          # 获取阶段请求间歇秒数（含随机抖动，建议≥0.5；触发限流(412/429)将自动等待10秒后重试该页）
-FETCH_MIN_REPLY=0        # 按评论数过滤（>=该值保留；0表示不过滤）
+FETCH_SLEEP=1.5          # 获取阶段请求间歇秒数（含随机抖动，建议≥0.5；触发限流(412/429)将自动等待20秒后重试该页）
+FETCH_MIN_REPLY=1        # 按评论数过滤（>=该值保留；0表示不过滤）
 FETCH_PS=20              # popular模式每页数量
 
 # 中文说明：默认抓取页数上限为 800；遇到 -400（max offset exceeded）时提前停止该BV
 CRAWL_MAX_PAGES=800      # 每个BV抓取评论页数上限（推荐：800页）
-CRAWL_SLEEP=0.5          # 评论抓取分页间歇秒数（含随机抖动，建议≥0.5；触发限流(412/429)将自动等待10秒后重试该页）
-MIN_PER_BVID=500         # 每个BV至少写出N条（按你的设想：至少500条）
+CRAWL_SLEEP=1.5          # 评论抓取分页间歇秒数（含随机抖动，建议≥0.5；触发限流(412/429)将自动等待20秒后重试该页）
+CRAWL_PS=100              # 评论抓取每页条数（pager=main 时生效，典型值：20或30）
+MIN_PER_BVID=700         # 每个BV至少写出N条（按你的设想：至少700条）
 
 # 中文说明：调试/诊断选项（可选）
 DUMP_RAW=""             # 若提供路径，则对每个BV转储原始响应到该TXT并退出抓取
 PRINT_FIRST=0            # 若>0，则打印首批评论文本条数并退出抓取
-SKIP_FETCH=0             # 若=1，跳过Step1，直接使用现有种子CSV
+SKIP_FETCH=1          # 若=1，跳过Step1，直接使用现有种子CSV
 
 # ========================= 参数解析 =========================
 # 中文说明：支持覆盖主要参数，示例：
@@ -57,6 +58,7 @@ while [[ $# -gt 0 ]]; do
     --fetch-ps) FETCH_PS="$2"; shift 2;;                   # popular模式每页数量
     --crawl-max-pages) CRAWL_MAX_PAGES="$2"; shift 2;;     # 评论页数
     --crawl-sleep) CRAWL_SLEEP="$2"; shift 2;;             # 评论间歇
+    --crawl-ps) CRAWL_PS="$2"; shift 2;;                   # 评论每页条数（main分页器）
     --min-per-bvid) MIN_PER_BVID="$2"; shift 2;;           # 每BV最小条数
     --per-dir) PER_DIR="$2"; shift 2;;                     # 每BV输出目录
     --clean-dir) CLEAN_DIR="$2"; shift 2;;                 # 清洗输出目录
@@ -93,9 +95,12 @@ if [[ "${SKIP_FETCH}" -eq 0 ]]; then
   if [[ "${FETCH_MODE}" == "search" ]]; then
     # 中文说明：关键词搜索模式
     FETCH_ARGS=( -m src.data.fetch_bilibili_bv --mode search --keywords-file "${KEYWORDS_FILE}" --max-pages "${FETCH_MAX_PAGES}" --order "${FETCH_ORDER}" --sleep-seconds "${FETCH_SLEEP}" --min-reply "${FETCH_MIN_REPLY}" --out "${OUT_SEED}" )
-  else
+  elif [[ "${FETCH_MODE}" == "popular" ]]; then
     # 中文说明：热门榜模式（更贴近视频热门度）；不需要关键词文件
     FETCH_ARGS=( -m src.data.fetch_bilibili_bv --mode popular --max-pages "${FETCH_MAX_PAGES}" --ps "${FETCH_PS}" --sleep-seconds "${FETCH_SLEEP}" --min-reply "${FETCH_MIN_REPLY}" --out "${OUT_SEED}" )
+  else
+    # 中文说明：全站必看模式；不需要关键词文件
+    FETCH_ARGS=( -m src.data.fetch_bilibili_bv --mode mustwatch --max-pages "${FETCH_MAX_PAGES}" --sleep-seconds "${FETCH_SLEEP}" --min-reply "${FETCH_MIN_REPLY}" --out "${OUT_SEED}" )
   fi
   # 中文说明：无需传入 SESSDATA；Python 会自动读取 cookies.json
   run_py "${FETCH_ARGS[@]}"
@@ -106,7 +111,7 @@ fi
 echo "[step2] 按BV转换为AID后抓取评论：bvids-file=${OUT_SEED} per-dir=${PER_DIR} 映射=${EMOJI_MAP}"
 mkdir -p "${PER_DIR}"
 
-CRAWL_ARGS=( -m src.data.crawl_bilibili --root "." --bvids-file "${OUT_SEED}" --max-pages "${CRAWL_MAX_PAGES}" --sleep-seconds "${CRAWL_SLEEP}" --emoji-map "${EMOJI_MAP}" --min-per-bvid "${MIN_PER_BVID}" --per-bvid-output-dir "${PER_DIR}" )
+CRAWL_ARGS=( -m src.data.crawl_bilibili --root "." --bvids-file "${OUT_SEED}" --max-pages "${CRAWL_MAX_PAGES}" --sleep-seconds "${CRAWL_SLEEP}" --emoji-map "${EMOJI_MAP}" --min-per-bvid "${MIN_PER_BVID}" --per-bvid-output-dir "${PER_DIR}" --pager main --ps "${CRAWL_PS}" )
 # 中文说明：上述 "min-per-bvid" 按“写出行数”统计（每个表情一行、含Unicode与[doge]类占位）。
 # 如需严格按“评论条数”统计并提前停止，可后续新增参数（例如 --min-comments-per-bvid）。
  # 中文说明：无需传入 SESSDATA；Python 会自动读取 cookies.json

@@ -138,23 +138,23 @@ def search_video_by_keyword(
             "order": order,            # 可选：pubdate/view 等
             "duration": 0,             # 0=全部时长
         }
-        # 中文说明：为每一页增加“限流自适应”重试机制——遇到 412/429 等限流状态，等待10秒后重试当前页
+        # 中文说明：为每一页增加“限流自适应”重试机制——遇到 412/429 等限流状态，等待20秒后重试当前页
         attempts = 0
         while True:
             try:
                 resp = session.get(base_url, params=params, timeout=10)
                 status = resp.status_code
                 if status in (412, 429):
-                    # 中文说明：触发限流，等待10秒后重试当前页；最多重试5次，避免死循环
+                    # 中文说明：触发限流，等待20秒后重试当前页；最多重试3次，避免死循环
                     preview = ""
                     try:
                         preview = resp.text[:120]
                     except Exception:
                         pass
-                    print(f"[rate-limit] 搜索限流 status={status} page={page} kw='{keyword}'，10秒后重试。片段: {preview}")
-                    time.sleep(10)
+                    print(f"[rate-limit] 搜索限流 status={status} page={page} kw='{keyword}'，20秒后重试。片段: {preview}")
+                    time.sleep(20)
                     attempts += 1
-                    if attempts < 5:
+                    if attempts < 3:
                         continue
                     else:
                         print(f"[warn] 搜索页 page={page} 达到重试上限，跳过该页。")
@@ -232,10 +232,10 @@ def fetch_popular_videos(
                 resp = session.get(base_url, params=params, timeout=10)
                 status = resp.status_code
                 if status in (412, 429):
-                    print(f"[rate-limit] popular 限流 status={status} page={page}，10秒后重试。")
-                    time.sleep(10)
+                    print(f"[rate-limit] popular 限流 status={status} page={page}，20秒后重试。")
+                    time.sleep(20)
                     attempts += 1
-                    if attempts < 5:
+                    if attempts < 3:
                         continue
                     else:
                         print(f"[warn] popular page={page} 达到重试上限，跳过该页。")
@@ -285,6 +285,71 @@ def fetch_popular_videos(
     return out
 
 
+def fetch_must_watch_videos(
+    session: requests.Session,
+    max_pages: int,
+    sleep_seconds: float,
+) -> List[Dict]:
+    out: List[Dict] = []
+    base_url = "https://api.bilibili.com/x/web-interface/popular/precious"
+    for page in range(1, max_pages + 1):
+        params = {
+            "pn": page,
+        }
+        attempts = 0
+        while True:
+            try:
+                resp = session.get(base_url, params=params, timeout=10)
+                status = resp.status_code
+                if status in (412, 429):
+                    time.sleep(20)
+                    attempts += 1
+                    if attempts < 3:
+                        continue
+                    else:
+                        break
+                if status != 200:
+                    time.sleep(sleep_seconds)
+                    break
+                j = resp.json()
+                data = j.get("data") or {}
+                result = data.get("list") or data.get("items") or []
+                for it in result:
+                    bvid = (it.get("bvid") or "").strip()
+                    if not bvid:
+                        continue
+                    title = (it.get("title") or "").strip()
+                    owner = it.get("owner") or {}
+                    author = (owner.get("name") or "").strip()
+                    pubdate = it.get("pubdate") or it.get("ctime") or 0
+                    stat = it.get("stat") or {}
+                    view = stat.get("view") or 0
+                    reply = stat.get("reply") or 0
+                    danmaku = stat.get("danmaku") or 0
+                    duration = it.get("duration") or 0
+                    out.append({
+                        "bvid": bvid,
+                        "title": title,
+                        "author": author,
+                        "pubdate": pubdate,
+                        "view": view,
+                        "reply": reply,
+                        "danmaku": danmaku,
+                        "duration": duration,
+                        "url": f"https://www.bilibili.com/video/{bvid}",
+                        "keyword": "",
+                        "page": page,
+                        "source": "mustwatch",
+                    })
+                break
+            except Exception:
+                time.sleep(sleep_seconds)
+                break
+        jitter = random.uniform(0.0, sleep_seconds * 0.3)
+        time.sleep(sleep_seconds + jitter)
+    return out
+
+
 # 中文说明：获取单个BV的视频统计信息（view、reply等），用于按评论数过滤
 def fetch_video_stat_by_bvid(session: requests.Session, bvid: str) -> Dict[str, int]:
     base_url = "https://api.bilibili.com/x/web-interface/view"
@@ -294,10 +359,10 @@ def fetch_video_stat_by_bvid(session: requests.Session, bvid: str) -> Dict[str, 
             resp = session.get(base_url, params={"bvid": bvid}, timeout=10)
             status = resp.status_code
             if status in (412, 429):
-                print(f"[rate-limit] stat 限流 status={status} bvid={bvid}，10秒后重试。")
-                time.sleep(10)
+                print(f"[rate-limit] stat 限流 status={status} bvid={bvid}，20秒后重试。")
+                time.sleep(20)
                 attempts += 1
-                if attempts < 5:
+                if attempts < 3:
                     continue
                 else:
                     print(f"[warn] stat bvid={bvid} 达到重试上限，返回空统计。")
@@ -356,9 +421,9 @@ def load_keywords_from_file(path: str) -> List[str]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="批量获取B站视频BV号（支持关键词搜索与热门榜）")
+    parser = argparse.ArgumentParser(description="批量获取B站视频BV号（支持关键词搜索/热门榜/全站必看）")
     # 中文说明：模式选择：search（关键词搜索） / popular（热门榜）
-    parser.add_argument("--mode", type=str, default="search", choices=["search", "popular"], help="获取模式：search=关键词搜索，popular=热门榜")
+    parser.add_argument("--mode", type=str, default="search", choices=["search", "popular", "mustwatch"], help="获取模式：search=关键词搜索，popular=热门榜，mustwatch=全站必看")
     # 中文说明：关键词相关配置（仅在 mode=search 时生效）
     parser.add_argument("--keywords", type=str, nargs="*", default=[], help="关键词列表（空格分隔）")
     parser.add_argument("--keywords-file", type=str, default="", help="关键词文件（逐行一个关键词，UTF-8）")
@@ -366,7 +431,7 @@ def main():
     # 中文说明：分页与节流
     parser.add_argument("--max-pages", type=int, default=5, help="分页页数上限（search为每关键词的页数；popular为热门榜页数）")
     parser.add_argument("--ps", type=int, default=20, help="popular模式每页数量（建议20）")
-    parser.add_argument("--sleep-seconds", type=float, default=0.5, help="分页请求间歇秒数（含随机抖动，建议≥0.5）；限流将自动10秒后重试该页")  # 中文行间注释：根据需求默认降至 0.5s；若频繁限流，请考虑提高或减少并发
+    parser.add_argument("--sleep-seconds", type=float, default=1.5, help="分页请求间歇秒数（含随机抖动，建议≥0.5）；限流将自动20秒后重试该页")
     parser.add_argument("--sessdata", type=str, default=None, help="可选：B站登录态 SESSDATA")
     # 中文说明：过滤条件
     parser.add_argument("--min-reply", type=int, default=0, help="按总评论数过滤（>=该值保留；0表示不过滤）")
@@ -400,8 +465,15 @@ def main():
         rows = fetch_popular_videos(session, max_pages=args.max_pages, ps=args.ps, sleep_seconds=args.sleep_seconds)
         print(f"[info] popular 模式收到 {len(rows)} 条视频结果")
         all_rows.extend(rows)
+    elif args.mode == "mustwatch":
+        print(f"[info] 按全站必看获取视频：pages={args.max_pages}")
+        rows = fetch_must_watch_videos(session, max_pages=args.max_pages, sleep_seconds=args.sleep_seconds)
+        print(f"[info] mustwatch 模式收到 {len(rows)} 条视频结果")
+        all_rows.extend(rows)
 
     # 中文说明：若设置了按评论数过滤，则补全 reply/view 并进行过滤
+    if args.mode == "mustwatch" and (not args.min_reply or args.min_reply <= 0):
+        args.min_reply = 1
     if args.min_reply and args.min_reply > 0:
         print(f"[info] 按评论数过滤：min-reply={args.min_reply}")
         filtered: List[Dict] = []

@@ -67,7 +67,7 @@ class TextEmojiDataset(Dataset):
         # 初始化数据集：加载多份CSV，构造文本-图片样本对
         # 中文说明：支持本地JSON映射，将CSV中的emoji字段映射到本地图片路径；
         # 当 local_only=True 时，严格只用本地图片，不进行 URL 回退；若本地找不到则记录缺失并丢弃样本。
-        self.rows = []
+        self.rows = []  # 中文说明：每行包含{text, image_path, emoji_id(初始化后填充)}
 
         # 统计信息：便于训练前打印数据质量
         self.stats = {
@@ -260,15 +260,46 @@ class TextEmojiDataset(Dataset):
         os.makedirs(self.cache_dir, exist_ok=True)
         self.text_tokenizer = text_tokenizer
 
-        # 轻量图片增强，避免过拟合且不破坏emoji主体
-        # 中文说明：加入 ImageNet 归一化，使输入分布与 EfficientNet-Lite0 预训练权重一致
+        # 建立 emoji_id 映射：将唯一图片路径映射到类别ID（0..N-1）
+        # 中文说明：这是“文本驱动表情检索”的关键，训练时用emoji_id作为CE分类标签。
+        from collections import OrderedDict
+        unique_ordered = OrderedDict()  # 保持插入顺序，稳定ID分配
+        for r in self.rows:
+            p = r['image_path']
+            if p not in unique_ordered:
+                unique_ordered[p] = None
+        self.emoji_paths = list(unique_ordered.keys())        # 类别原型的图片路径列表
+        self.emoji_id_of_path = {p: i for i, p in enumerate(self.emoji_paths)}
+        for r in self.rows:
+            r['emoji_id'] = self.emoji_id_of_path[r['image_path']]  # 为每条样本填充类别ID
+
+        # 强化图片增强：提升特征熵，避免表示崩溃
+        # 中文说明：采用随机裁剪/翻转/颜色抖动/模糊/灰度扰动等增强；
+        # 对于Emoji图像，增强幅度控制在合理范围，尽量不破坏语义，但提高外观多样性。
         self.img_tf = transforms.Compose([
-            transforms.Resize((224, 224)),     # EfficientNet-Lite0 常用输入尺寸
-            transforms.ColorJitter(0.05, 0.05, 0.05, 0.02),
+            # 随机裁剪到 224×224，并允许一定缩放与宽高比变化（提升视角多样性）
+            transforms.RandomResizedCrop(
+                224,
+                scale=(0.5, 1.0),          # 中文说明：裁剪尺度范围（保留50%~100%内容）
+                ratio=(0.75, 1.33)         # 宽高比扰动，避免特征过于集中
+            ),
+            # 随机水平翻转（部分emoji翻转语义不变，增强鲁棒性）
+            transforms.RandomHorizontalFlip(p=0.5),
+            # 颜色抖动（亮度/对比度/饱和度/色相），增强光照与风格变化的适应性
+            transforms.ColorJitter(0.4, 0.4, 0.4, 0.1),
+            # 轻度高斯模糊，模拟拍摄/压缩导致的细节损失
+            transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0)),
+            # 小概率转为灰度，迫使网络降低对颜色的过拟合
+            transforms.RandomGrayscale(p=0.05),
+            # 转张量与 ImageNet 归一化（对齐 EfficientNet-Lite0 预训练分布）
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD)
         ])
         self.max_len = max_len
+
+        # 文本动态增强设置（B站风格）：在 __getitem__ 中以一定概率应用
+        # 中文说明：模拟口语化/打字习惯，如“哈哈哈”“啊呀吧嘛”，提升文本特征的鲁棒性。
+        self.text_aug_prob = 0.3  # 30% 概率进行一次增强；可在后续需要时提升
 
     def __len__(self):
         # 返回样本总数
@@ -280,6 +311,11 @@ class TextEmojiDataset(Dataset):
         # 返回一个样本：文本token与图片张量
         row = self.rows[idx]
         text = row['text']
+        # 动态文本增强：按概率对原文本做轻度扰动
+        if self.text_aug_prob > 0.0:
+            import random
+            if random.random() < self.text_aug_prob:
+                text = self._augment_text(text)
         # 中文说明：仅本地图片模式；样本在构造阶段已确保存在本地路径
         try:
             img = Image.open(row['image_path']).convert('RGB')
@@ -298,5 +334,38 @@ class TextEmojiDataset(Dataset):
         return {
             'input_ids': toks['input_ids'].squeeze(0),           # 文本token id
             'attention_mask': toks['attention_mask'].squeeze(0), # 注意力mask
-            'image': img_t                                       # 图片张量
+            'image': img_t,                                      # 图片张量（训练检索时通常不会使用）
+            'emoji_id': row['emoji_id']                          # 表情类别ID（CE分类标签）
         }
+
+    # ========== 文本增强实现 ==========
+    def _augment_text(self, text: str) -> str:
+        """对文本进行轻度口语化增强（B站特色）。
+
+        - 随机加入语气词："啊/呀/吧/嘛/哇/啦/呢"；
+        - 随机拉长笑/草等字符："哈/草/嗷/嘻/喵"；
+        - 小概率重复末尾字符或加入标点 "！/～"。
+        """
+        import random
+        fillers = ["啊", "呀", "吧", "嘛", "哇", "啦", "呢"]
+        laugh_chars = ["哈", "草", "嗷", "嘻", "喵"]
+        s = text
+        # 1) 随机插入语气词（句首或句尾）
+        if random.random() < 0.5:
+            if random.random() < 0.5:
+                s = random.choice(fillers) + s
+            else:
+                s = s + random.choice(fillers)
+        # 2) 随机拉长笑/草等字符（若出现则拉长）
+        for ch in laugh_chars:
+            if ch in s and random.random() < 0.5:
+                n = random.randint(2, 5)
+                s = s.replace(ch, ch * n)
+        # 3) 小概率重复末尾字符或加入标点
+        if len(s) > 0 and random.random() < 0.4:
+            end = s[-1]
+            if end.isalpha() or end.isdigit():
+                s = s + end
+            else:
+                s = s + random.choice(["！", "～"])
+        return s

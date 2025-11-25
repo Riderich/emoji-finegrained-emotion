@@ -8,6 +8,7 @@ sentencepiece>=0.1.99
 # 计算机视觉与图像处理
 opencv-python>=4.9.0
 pillow>=10.0
+timm>=0.9.2  # 高性能视觉模型库（EfficientNet-Lite0 等）
 
 # 科学计算与数据处理
 numpy>=1.26

@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import torch
 import torch.nn as nn
+import math  # 中文说明：用于计算温度初值的对数
 from transformers import AutoTokenizer, AutoModel
 import timm
 from modelscope.hub.snapshot_download import snapshot_download
@@ -32,7 +33,7 @@ class MeanPooler(nn.Module):
 
 
 class TextEmojiContrastive(nn.Module):
-    def __init__(self, proj_dim=256):
+    def __init__(self, proj_dim=256, init_tau: float = 0.07):
         super().__init__()
         # 中文说明：将 ModelScope 缓存目录重定位到项目路径，便于管理与迁移
         # 修正：从当前文件回溯四级到项目根（contrastive→train→src→项目根）
@@ -167,8 +168,11 @@ class TextEmojiContrastive(nn.Module):
         self.text_proj = ProjectionHead(self.text_hidden, proj_dim)
         self.img_proj = ProjectionHead(self.img_hidden, proj_dim)
 
-        # 可学习温度参数；初值0 → tau=1.0
-        self.log_tau = nn.Parameter(torch.tensor(0.0))
+        # 可学习温度参数；初始化为常用范围 0.05~0.07 的中值（默认0.07）
+        # 中文说明：以 log_tau 作为可学习参数，前向时取 exp(log_tau) 保证温度>0
+        # 典型对比学习中温度过小会导致梯度不稳定，过大会降低对比度；0.05~0.07通常较稳健
+        init_tau = max(1e-6, float(init_tau))  # 保护：确保初值>0
+        self.log_tau = nn.Parameter(torch.tensor(math.log(init_tau), dtype=torch.float32))
 
     def forward(self, batch):
         # 文本前向：获取最后隐状态并做均值池化
@@ -183,5 +187,25 @@ class TextEmojiContrastive(nn.Module):
         i_feat = self.img_encoder(batch['image'])
         iz = self.img_proj(i_feat)                                 # 图片投影向量
 
-        tau = torch.exp(self.log_tau)                              # 温度标量
+        tau = torch.exp(self.log_tau)                              # 温度标量（>0）
         return tz, iz, tau, t_feat, i_feat                         # 返回中间特征便于分析
+
+    # ========= 便捷编码接口（检索任务使用） =========
+    def encode_text(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+        """仅编码文本，返回对齐空间中的单位向量。
+
+        中文说明：用于“文本驱动表情检索”训练/评估阶段，避免不必要的图片前向。
+        """
+        t_out = self.text_encoder(input_ids=input_ids, attention_mask=attention_mask)
+        t_feat = self.text_pooler(t_out.last_hidden_state, attention_mask)
+        tz = self.text_proj(t_feat)
+        return tz
+
+    def encode_images(self, images: torch.Tensor) -> torch.Tensor:
+        """仅编码图片，返回对齐空间中的单位向量。
+
+        中文说明：用于构建 76 类表情的原型库（每类一张图片），训练时作为全局候选集合。
+        """
+        i_feat = self.img_encoder(images)
+        iz = self.img_proj(i_feat)
+        return iz

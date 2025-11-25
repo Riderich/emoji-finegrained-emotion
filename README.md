@@ -74,3 +74,24 @@ scripts\clean_data.bat
   - 在 `data/annotations/` 中创建评分文件（个体与均值），后续由分析脚本计算 ICC/Pearson 并输出标签修订结果。
 
 更多安装细节与故障排查请见 `env_setup.md`。
+
+## 检索训练与评估（Top-1 / Top-5）
+- 训练（Windows）：
+  - 运行 `scripts\run_pretrain.bat`
+  - 脚本会使用本地数据（`data/vendor/crawl/cleaned/` + `combined_emoji_mapped_more3.csv`）构建数据集，端到端训练文本-图片对齐空间；每轮重建全局原型库；使用 CE 分类 + Triplet 排序混合损失，并按步（batch）进行线性 warmup + 余弦退火调度。
+- 训练（Linux）：
+  - 赋权后运行：
+    - `chmod +x scripts/run_pretrain.sh`
+    - `scripts/run_pretrain.sh --env your_conda_env`
+  - 说明：Linux 脚本仅负责调用训练入口（`python -m src.train.contrastive.run_pretrain`）；训练超参与数据路径已在 Python 内置，需调整请直接编辑 `src/train/contrastive/run_pretrain.py` 中的默认参数块（含批大小、轮数、数据目录、AMP与调度等）。
+- 训练日志：
+  - 打印 `loss`、`Top-1`、`Top-5`、温度 `tau` 与各参数组学习率。
+  - 按 `Top-1` 更新 `checkpoints/pretrain_best.pt`；每轮保存 `pretrain_last.pt`。
+- 评估（Windows/Linux 通用）：
+  - 执行 `python -m src.eval.main`
+  - 程序会自动：
+    - 使用 ModelScope/HF 本地缓存加载中文BERT分词器；
+    - 构建数据集（严格本地图片）；
+    - 加载 `pretrain_best.pt`（或 `pretrain_last.pt`）；
+    - 构建全局原型库并计算 Top-1 / Top-5。
+- 注意：若 `data/vendor/crawl/cleaned/` 为空或无本地图片映射，评估会提示无法构建原型库；请先运行数据准备与清洗脚本并确保 `bilibili_emojiall_map.json` 与 `bilibili_image_name_map.csv` 可用。
