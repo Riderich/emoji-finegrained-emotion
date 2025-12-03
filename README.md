@@ -12,7 +12,12 @@
 - `reports/` 错误分析与可视化产出
 
 ## 快速开始（Windows）
-1) 创建并激活虚拟环境
+1) 创建并激活虚拟环境（推荐使用 Conda）
+```
+conda create -n your_env_name python=3.9
+conda activate your_env_name
+```
+   或使用 venv：
 ```
 python -m venv .venv
 .\.venv\Scripts\activate
@@ -33,8 +38,19 @@ scripts\clean_data.bat
   - 先用 `OpenMoji` 抓取「表情与情绪」类别的面部 Emoji（作为开放基线）：
     - 运行：`scripts\prepare_data.bat`
     - 会下载图片到 `data/emoji_images/openmoji/` 并统一分辨率为 `72x72`，随后在 `data/emoji_images/openmoji_aug/` 内生成增强样本（旋转、亮度、对比度）。
- - 其他平台（如小红书/微博/微信/Facebook）需按平台许可与来源获取，放置到 `data/emoji_images/<platform>/` 并遵循命名规则。
- 
+  - 其他平台（如小红书/微博/微信/Facebook）需按平台许可与来源获取，放置到 `data/emoji_images/<platform>/` 并遵循命名规则。
+- **文本-Emoji配对数据准备：**
+  - **原始数据统计与筛选：**
+    - 运行 `data/vendor/crawl/emoji_count.py` 脚本，该脚本会：
+      - 统计 `cleaned_combined.csv` 中各 Emoji 的数量。
+      - 将占比小于1%的 Emoji 类别合并为“others”。
+      - 生成饼图可视化 Emoji 分布（图例为英文，Emoji 名称为中文）。
+      - 输出完整的 Emoji 计数到 `emoji_counts.csv`。
+      - 筛选出计数大于300条的 Emoji 数据，并保存为 `cleaned_combined_count_gt300.csv`。
+  - **训练数据文件生成：**
+    - 将 `cleaned_combined.csv` 复制到 `data/text_pairs/train_pairs_1.csv` 作为训练文件1。
+    - 将 `cleaned_combined_count_gt300.csv` 复制到 `data/text_pairs/train_pairs_2.csv` 作为训练文件2。
+  - **训练代码路径更新：** 训练代码（`src/train/contrastive/run_pretrain.py`）已配置为使用 `data/text_pairs/train_pairs_2.csv` 作为默认训练数据源。
 ## B站数据爬取（BV获取 + 评论抓取 + 清洗）
 - 目的：扩大训练数据规模，优先获取包含 `[表情名]` 的评论样本。
 - 一键运行（Windows）：
@@ -68,25 +84,31 @@ scripts\clean_data.bat
 - 输出：
   - 清洗后各文件在 `data/vendor/crawl/cleaned/`
   - 可选合并输出 `cleaned_combined.csv`
-- 文本-Emoji配对数据：
-  - 模板示例位于 `src/data/templates/text_pairs_template.csv`，可按列填写并放入 `data/text_pairs/`。
-- 中文评分与标签：
-  - 在 `data/annotations/` 中创建评分文件（个体与均值），后续由分析脚本计算 ICC/Pearson 并输出标签修订结果。
+- **注意：** 文本-Emoji配对数据的最终准备（包括筛选和文件复制）请参考“数据准备指南”中的详细说明。
 
 更多安装细节与故障排查请见 `env_setup.md`。
 
 ## 检索训练与评估（Top-1 / Top-5）
 - 训练（Windows）：
   - 运行 `scripts\run_pretrain.bat`
-  - 脚本会使用本地数据（`data/vendor/crawl/cleaned/` + `combined_emoji_mapped_more3.csv`）构建数据集，端到端训练文本-图片对齐空间；每轮重建全局原型库；使用 CE 分类 + Triplet 排序混合损失，并按步（batch）进行线性 warmup + 余弦退火调度。
+  - 脚本会使用预处理后的 `data/text_pairs/train_pairs_2.csv` 数据集，端到端训练文本-图片对齐空间。
+  - **核心策略：**
+    - **多模态对比学习：** 文本和图像特征在共享语义空间中对齐。
+    - **损失函数：** 结合了交叉熵（CE）分类损失和Triplet排序损失。Triplet损失的正样本对使用当前批次中的图像特征，确保梯度回传到图像编码器。CE损失权重相对较高，Triplet权重也已增强。
+    - **原型库：** 每轮训练都会重建全局原型库。
+    - **温度参数（τ）：** 引入可学习的温度参数，并约束其值在 `0.03` 到 `0.20` 之间，以优化对比学习的性能和稳定性。
+    - **文本输入：** 使用 `message` 字段作为文本输入，并进行分词、截断和填充至96个token。
+    - **学习率调度：** 采用线性预热（Linear Warmup）结合余弦退火（Cosine Annealing）调度策略。
+    - **混合精度训练（AMP）：** 目前已禁用，以避免潜在的梯度NaN问题。
 - 训练（Linux）：
   - 赋权后运行：
     - `chmod +x scripts/run_pretrain.sh`
     - `scripts/run_pretrain.sh --env your_conda_env`
-  - 说明：Linux 脚本仅负责调用训练入口（`python -m src.train.contrastive.run_pretrain`）；训练超参与数据路径已在 Python 内置，需调整请直接编辑 `src/train/contrastive/run_pretrain.py` 中的默认参数块（含批大小、轮数、数据目录、AMP与调度等）。
+  - 说明：Linux 脚本仅负责调用训练入口（`python -m src.train.contrastive.run_pretrain`）；训练超参数与数据路径已在 Python 内置，需调整请直接编辑 `src/train/contrastive/run_pretrain.py` 中的默认参数块（含批大小、轮数、数据目录、AMP与调度等）。
 - 训练日志：
   - 打印 `loss`、`Top-1`、`Top-5`、温度 `tau` 与各参数组学习率。
   - 按 `Top-1` 更新 `checkpoints/pretrain_best.pt`；每轮保存 `pretrain_last.pt`。
+  - **新增：** 训练结束后会生成详细的 `eval_summary.txt` 评估日志，包含整体指标、每类表现、平均排名、常见混淆及Top-1预测分布。
 - 评估（Windows/Linux 通用）：
   - 执行 `python -m src.eval.main`
   - 程序会自动：
@@ -94,4 +116,5 @@ scripts\clean_data.bat
     - 构建数据集（严格本地图片）；
     - 加载 `pretrain_best.pt`（或 `pretrain_last.pt`）；
     - 构建全局原型库并计算 Top-1 / Top-5。
+    - **新增：** 评估阶段采用平衡采样策略，每个表情类别抽取固定数量（例如，35条）的样本进行测试，确保评估结果的公平性和可靠性。
 - 注意：若 `data/vendor/crawl/cleaned/` 为空或无本地图片映射，评估会提示无法构建原型库；请先运行数据准备与清洗脚本并确保 `bilibili_emojiall_map.json` 与 `bilibili_image_name_map.csv` 可用。

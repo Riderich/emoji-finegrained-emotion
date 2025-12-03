@@ -20,6 +20,77 @@ from src.train.contrastive.train_loop import (
     eval_topk_accuracy,
 )
 
+def plot_data_vs_accuracy(per_class_total, per_class_hit, class_names, out_path):
+    try:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+    except Exception:
+        return
+    try:
+        import matplotlib
+        from matplotlib.font_manager import FontProperties, findfont
+        candidates = ['Microsoft YaHei', 'SimHei', 'Noto Sans CJK SC', 'Arial Unicode MS']
+        chosen = None
+        for name in candidates:
+            try:
+                fp = FontProperties(family=name)
+                findfont(fp, fallback_to_default=False)
+                chosen = name
+                break
+            except Exception:
+                continue
+        if chosen:
+            matplotlib.rcParams['font.family'] = 'sans-serif'
+            matplotlib.rcParams['font.sans-serif'] = [chosen]
+        matplotlib.rcParams['axes.unicode_minus'] = False
+    except Exception:
+        pass
+    totals = [int(n) for n in per_class_total]
+    accs = []
+    for n, h in zip(per_class_total, per_class_hit):
+        if int(n) > 0:
+            accs.append(float(h) / float(n))
+        else:
+            accs.append(float('nan'))
+    plt.figure(figsize=(9, 6))
+    sns.scatterplot(x=totals, y=[a * 100.0 for a in accs])
+    plt.xlabel('每类样本量')
+    plt.ylabel('Top-1(%)')
+    plt.title('样本量 vs Top-1')
+    try:
+        # 中文说明：按 Top-1 准确率的前10与后10进行标注（忽略 NaN）
+        valid = [i for i, a in enumerate(accs) if not (a != a)]  # NaN 检查：a!=a 为 True 当且仅当 a 是 NaN
+        top_idx = sorted(valid, key=lambda i: accs[i], reverse=True)[:10]
+        bottom_idx = sorted(valid, key=lambda i: accs[i])[:10]
+        def _name(i):
+            if class_names is not None and i < len(class_names) and class_names[i]:
+                return str(class_names[i])
+            return f"id={i}"
+        seen = set()
+        for i in top_idx:
+            if i in seen:
+                continue
+            seen.add(i)
+            nm = _name(i)
+            plt.annotate(nm, (totals[i], accs[i] * 100.0), fontsize=8, color='green')
+        for i in bottom_idx:
+            if i in seen:
+                continue
+            seen.add(i)
+            nm = _name(i)
+            plt.annotate(nm, (totals[i], accs[i] * 100.0), fontsize=8, color='red')
+    except Exception:
+        pass
+    try:
+        import os
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+        plt.tight_layout()
+        plt.savefig(out_path)
+        plt.close()
+        print(f"[viz] 散点图已保存: {out_path}")
+    except Exception:
+        pass
+
 
 class Args:
     """
@@ -28,11 +99,11 @@ class Args:
     路径均使用项目相对路径，确保在Windows下可直接运行：`python -m src.train.contrastive.run_pretrain`。
     """
     # 训练用的CSV文件列表（可选）。留None表示按目录扫描
-    csv = [r'/data6/zwang/emoji-finegrained-emotion/data/vendor/crawl/cleaned_combined.csv']  # 单一整合CSV
-    # CSV目录（默认扫描 cleaned 目录） —— 注意使用项目相对路径（无项目名前缀）
-    csv_dir = r'data\vendor\crawl\cleaned'
-    # 额外的合并CSV（可选）
-    extra_combined = r'data\vendor\crawl\combined_emoji_mapped_more3.csv'
+    csv = [r'data\text_pairs\train_pairs_2.csv']  # 默认使用筛选后的训练文件（二）
+    # CSV目录（默认扫描 text_pairs 目录） —— 注意使用项目相对路径（无项目名前缀）
+    csv_dir = r'data\text_pairs'
+    # 额外的合并CSV（可选，默认关闭避免混合数据源）
+    extra_combined = ''
     # 图片缓存目录（本数据集当前不启用URL下载，仍保留目录以便缺失报告）
     cache_dir = r'data\vendor\emote_cache'
     # 本地emoji映射JSON（name/emoji → local_path），已兼容 `local_path` 字段
@@ -44,39 +115,44 @@ class Args:
     local_only = True               # 严格只用本地图片，缺失样本直接丢弃
     text_sentinel = False           # 默认保留表情名文本信号（建议），需要匿名时再启用哨兵
     sentinel_token = '[EMOJI]'
-    text_field = 'sentence'         # 使用 `sentence` 字段；如需用 `message` 可改为 'message'
+    text_field = 'message'          # 使用 `message` 字段；更贴近原始评论语料
     # 训练参数
-    epochs = 70                        # 中文说明：默认训练70轮，便于在50/70做策略决策
-    batch_size = 160                   # 默认批大小提升，若显存不足可下调
+    epochs = 70                        # 中文说明：总训练70轮，依据有效数据量的安全上限
+    batch_size = 128                   # 中文说明：采用Optuna建议的128批大小，兼顾显存与稳定性
     num_workers = 12                   # 提升并发加载线程（根据IO与CPU调整）
     resume = False
     val_ratio = 0.12                   # 中文说明：验证集比例≈12%，与最优trial相近
     save_dir = r'checkpoints'
-    use_amp = True                     # 启用AMP混合精度以节省显存、加速训练
+    use_amp = False                    # 中文说明：禁用AMP混合精度以防止梯度NaN（尤其在BERT微调时）
+    eval_per_class = 50                # 每类评估样本上限（平衡采样）
     # 文本模型来源：'modelscope' 或 'huggingface'
     text_model_source = 'modelscope'
     # 中文说明：修正为有效的ModelScope模型ID（中文BERT Base骨干）
     modelscope_id = 'damo/nlp_bert_backbone_base_std'
     hf_model_name = 'bert-base-chinese'
     # Optuna 调参配置
-    tune = True                       # 是否启用调参流程；默认False，开启后运行study.optimize
+    tune = False                      # 中文说明：关闭Optuna调参，直接使用稳定手工配置
     n_trials = 30                      # 调参次数提升，扩大探索范围
     trial_epochs = 7                   # 每个trial训练轮数略增，提升评估稳定性
     # 学习率与投影维度（固定配置，避免命令行参数）
-    text_lr = 2e-5
-    img_lr = 1e-4
-    proj_lr = 1e-3
-    # 中文说明：温度参数（log_tau）使用更高学习率以加快自适应
-    temp_lr = 3e-3
+    text_lr = 1e-6                    # 中文说明：降低文本编码器学习率（从1e-5降至1e-6），防止梯度爆炸
+    img_lr = 2e-5                     # 中文说明：降低图像编码器学习率
+    proj_lr = 5e-5                    # 中文说明：大幅降低投影头学习率（从5e-4降至5e-5），避免初始震荡传导至编码器
+    temp_lr = 1e-5                    # 中文说明：温度log_tau的学习率（小步学习，避免爆炸）
+    enc_weight_decay = 0.01           # 中文说明：增大权重衰减（从7.7e-5增至0.01），加强正则化约束
+    head_weight_decay = 0.01          # 中文说明：增大投影头权重衰减
+    learn_tau = True                  # 中文说明：允许学习温度τ，并在训练中对范围做约束防止异常
     proj_dim = 512
     # 冻结轮数（检索任务按需取消冻结阶段，直接端到端训练）
     warmup_freeze_epochs = 0  # 中文说明：取消冻结阶段，端到端训练
     lr_eta_min = 0.0
-    # 中文说明：按步（batch）预热比例（线性 warmup），建议 5%~10%
-    warmup_ratio = 0.1
+    # 中文说明：支持固定步数的warmup/cosine配置（优先使用固定步数，便于稳定训练）
+    warmup_steps = 500                # 前500步线性预热（约4个epoch，按数据规模估算）
+    cosine_t_max = 0                  # 中文说明：T_max改为动态计算 total_steps - warmup_steps；此处设0表示忽略固定值
+    warmup_ratio = 0.1                # 兼容旧逻辑的比例配置（当未设置固定步数时使用）
     # 温度初值与梯度调试
     init_temp = 0.05                   # 中文说明：固定温度τ=0.05，避免小数据下不稳定学习
-    debug_grad = False
+    debug_grad = True  # 中文说明：启用梯度/logits调试打印（每轮首个batch打印一次），便于定位loss与评估问题
 
 
 def collect_csvs(args):
@@ -327,6 +403,37 @@ def main():
     else:
         val_dl = None
 
+    def _build_balanced_eval_loader(dataset, val_subset, batch_size, num_workers, per_class):
+        import random
+        from torch.utils.data import Subset, DataLoader
+        # 收集源索引：优先使用验证集；无验证则用完整数据集
+        source_indices = list(range(len(dataset)))
+        if val_subset is not None and hasattr(val_subset, 'indices'):
+            source_indices = list(val_subset.indices)
+        by_class = {}
+        for idx in source_indices:
+            cid = int(dataset.rows[idx]['emoji_id'])
+            by_class.setdefault(cid, []).append(idx)
+        if not by_class:
+            return DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True, persistent_workers=True if num_workers > 0 else False)
+        # 目标每类样本数：不超过 per_class，且受限于各类最小可用数
+        min_avail = min(len(v) for v in by_class.values())
+        k = max(1, min(per_class, min_avail))
+        rng = random.Random(42)
+        sel = []
+        for cid, idxs in by_class.items():
+            rng.shuffle(idxs)
+            sel.extend(idxs[:k])
+        subset = Subset(dataset, sel)
+        try:
+            # 打印一次评估抽样概况（每类样本数与统一抽样数）
+            print(f"[eval-balance] per_class_target={k} classes={len(by_class)} total_selected={len(sel)}")
+        except Exception:
+            pass
+        return DataLoader(subset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True, persistent_workers=True if num_workers > 0 else False)
+
+    eval_dl = _build_balanced_eval_loader(ds, val_ds if val_ds is not None else None, args.batch_size, args.num_workers, args.eval_per_class)
+
     # 中文说明：快速检查一个batch的形状与取值范围，排除数据管道错误
     try:
         b = next(iter(train_dl))
@@ -348,38 +455,45 @@ def main():
         pass
 
     # 模型
-    model = TextEmojiContrastive(proj_dim=args.proj_dim, init_tau=args.init_temp).to(device)  # 中文说明：投影维度=512；温度初始固定为0.05
-    # ===== 固定温度τ：不参与训练，避免学习失控 =====
+    model = TextEmojiContrastive(proj_dim=args.proj_dim, init_tau=args.init_temp).to(device)  # 中文说明：投影维度=512；温度初始为0.05
+    # ===== 温度τ初始化：默认允许以小学习率自适应；如禁用则冻结 =====
     import math
     try:
         model.log_tau.data = torch.tensor(math.log(0.05), dtype=torch.float32, device=model.log_tau.device)
     except Exception:
         model.log_tau.data = torch.tensor(math.log(0.05), dtype=torch.float32)
-    model.log_tau.requires_grad = False  # 中文说明：冻结温度参数，移出优化器
+    model.log_tau.requires_grad = bool(getattr(args, 'learn_tau', True))  # 中文说明：按配置决定是否学习τ
     # 中文说明：冷启动阶段冻结编码器，先训练投影头以稳定对齐；后续再解冻
     # 冻结轮数改为可配置：warmup_freeze_epochs（默认1，可通过CLI覆盖）
 
-    # 参数分组：不同模块不同学习率（已移除 log_tau 参数组）
+    # 参数分组：不同模块不同学习率与权重衰减；可选加入 log_tau
+    enc_wd = float(getattr(args, 'enc_weight_decay', 7.7e-5))
+    head_wd = float(getattr(args, 'head_weight_decay', 1e-4))
     param_groups = [
-        {'params': model.text_encoder.parameters(), 'lr': args.text_lr, 'weight_decay': 0.01},   # 文本编码器
-        {'params': model.img_encoder.parameters(),  'lr': args.img_lr,  'weight_decay': 0.01},   # 图片编码器
+        {'params': model.text_encoder.parameters(), 'lr': args.text_lr, 'weight_decay': enc_wd},   # 文本编码器
+        {'params': model.img_encoder.parameters(),  'lr': args.img_lr,  'weight_decay': enc_wd},   # 图片编码器
         {'params': list(model.text_proj.parameters()) + list(model.img_proj.parameters()),
-         'lr': args.proj_lr, 'weight_decay': 0.0}                                                # 投影头
+         'lr': args.proj_lr, 'weight_decay': head_wd}                                              # 投影头
     ]
+    if getattr(args, 'learn_tau', True):
+        # 中文说明：加入温度log_tau的参数组，采用极小学习率与零权重衰减
+        param_groups.append({'params': [model.log_tau], 'lr': args.temp_lr, 'weight_decay': 0.0})
     optimizer = AdamW(param_groups)
     # 中文说明：改用“按步”的顺序调度器：线性 warmup（按 warmup_ratio）→ 余弦退火
     # 计算总步数（近似为每轮的batch数乘以轮数）
     import math
     steps_per_epoch = max(1, len(train_dl))
     total_steps = steps_per_epoch * args.epochs
-    warmup_steps = max(1, int(total_steps * args.warmup_ratio))
+    # 中文说明：优先使用固定 warmup 步数；若未设置则回退到比例 warmup
+    warmup_steps_cfg = int(getattr(args, 'warmup_steps', 0))
+    warmup_steps = warmup_steps_cfg if warmup_steps_cfg > 0 else max(1, int(total_steps * args.warmup_ratio))
     from torch.optim.lr_scheduler import LinearLR, SequentialLR, CosineAnnealingLR
-    warmup = LinearLR(optimizer, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps)  # 中文说明：线性从极低LR升至基准LR
-    cosine = CosineAnnealingLR(
-        optimizer,
-        T_max=max(1, int((total_steps - warmup_steps) * 1.5)),  # 中文说明：扩展余弦总步数×1.5，避免前期LR过快衰减
-        eta_min=eta_min
-    )
+    warmup = LinearLR(optimizer, start_factor=0.01, end_factor=1.0, total_iters=warmup_steps)  # 中文说明：线性预热，从1% LR升至基准LR
+    # 中文说明：T_max 动态计算为“总训练步数 - warmup步数”，避免在中途提前衰减到0
+    t_max = max(1, total_steps - warmup_steps)
+    # 中文说明：打印一次调度器步数信息，便于在日志中确认LR曲线是否合理
+    print(f"[lr-schedule] steps_per_epoch={steps_per_epoch} total_steps={total_steps} warmup_steps={warmup_steps} cosine_T_max={t_max}")
+    cosine = CosineAnnealingLR(optimizer, T_max=t_max, eta_min=eta_min)
     scheduler = SequentialLR(optimizer, schedulers=[warmup, cosine], milestones=[warmup_steps])
 
     # 检查点路径
@@ -452,13 +566,11 @@ def main():
             total_steps_trial = steps_per_epoch_trial * args.trial_epochs
             warmup_steps_trial = max(1, int(total_steps_trial * args.warmup_ratio))
             from torch.optim.lr_scheduler import LinearLR, SequentialLR, CosineAnnealingLR
-            warmup_t = LinearLR(opt, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps_trial)
-            cosine_t = CosineAnnealingLR(
-                opt,
-                T_max=max(1, int((total_steps_trial - warmup_steps_trial) * 1.5)),  # 中文说明：扩展余弦总步数×1.5
-                eta_min=eta_min
-            )
-            trial_scheduler = SequentialLR(opt, schedulers=[warmup_t, cosine_t], milestones=[warmup_steps_trial])
+            warmup_t = LinearLR(opt, start_factor=0.01, end_factor=1.0, total_iters=warmup_steps_trial)
+            # 中文说明：trial 阶段同样采用动态 T_max，保持与主训练一致（避免中途LR归零）
+            t_max_trial = max(1, total_steps_trial - warmup_steps_trial)
+            trial_cosine = CosineAnnealingLR(opt, T_max=t_max_trial, eta_min=eta_min)
+            trial_scheduler = SequentialLR(opt, schedulers=[warmup_t, trial_cosine], milestones=[warmup_steps_trial])
 
             best_acc = 0.0  # 追踪 Top-1 最优
             # 仅训练较少轮次，加速搜索
@@ -476,12 +588,23 @@ def main():
                         m, t_dl, opt, device, prototypes,
                         use_amp=enable_amp, scheduler=trial_scheduler,
                         debug_grad=args.debug_grad,
-                        mix_weights=(1.0, 0.3), tri_margin=0.2, top_k=10
+                        mix_weights=(0.7, 0.3), tri_margin=0.5, top_k=10
                     )
                     # 评估 Top-1/Top-5
+                    # 中文说明：打印评估原型的前5个ID以确认是否“未被固化”（顺序应稳定）
+                    proto_ids = [ds.emoji_id_of_path[p] for p in ds.emoji_paths]
+                    # 中文说明：将路径→名称映射反转并规范化类别名（去掉方括号），传入评估以按名称打印
+                    name_by_path = {v: k for k, v in ds.emoji_map_by_name.items()}  # 路径→表情名
+                    def _to_name(p):
+                        # 中文说明：某些映射名形如"[笑哭]"，去掉首尾方括号更友好
+                        n = name_by_path.get(p, '')
+                        if isinstance(n, str) and len(n) >= 2 and n[0] == '[' and n[-1] == ']':
+                            return n[1:-1]
+                        return n or None
+                    class_names = [_to_name(p) for p in ds.emoji_paths]  # 与原型顺序对齐
                     metrics = eval_topk_accuracy(
                         m, v_dl if v_dl is not None else t_dl, device, prototypes,
-                        use_amp=enable_amp, top_k=(1, 5)
+                        use_amp=enable_amp, top_k=(1, 5), proto_ids=proto_ids, class_names=class_names
                     )
                     acc_ep = float(metrics.get('top1', 0.0))
                 except RuntimeError as e:
@@ -539,33 +662,37 @@ def main():
         # 使用最佳投影维度重建模型（中文说明：让最终训练与trial设定一致）
         if 'proj_dim' in best:
             model = TextEmojiContrastive(proj_dim=best['proj_dim'], init_tau=args.init_temp).to(device)
-        # ===== 确保最终训练也冻结温度τ =====
+        # ===== 最终训练：温度τ初始化与是否学习 =====
         try:
             model.log_tau.data = torch.tensor(math.log(0.05), dtype=torch.float32, device=model.log_tau.device)
         except Exception:
             model.log_tau.data = torch.tensor(math.log(0.05), dtype=torch.float32)
-        model.log_tau.requires_grad = False
+        model.log_tau.requires_grad = bool(getattr(args, 'learn_tau', True))
         # 根据最佳权重衰减与学习率重建优化器
         enc_wd_best = best.get('enc_weight_decay', 0.01)
         head_wd_best = best.get('head_weight_decay', 0.0)
-        # 中文说明：重建优化器参数分组，保持 log_tau 独立参数组（零权重衰减）与较高学习率，避免“静默杀死”
-        optimizer = AdamW([
+        # 中文说明：重建优化器参数分组；如允许则加入 log_tau 的小步学习
+        final_param_groups = [
             {'params': model.text_encoder.parameters(), 'lr': best['text_lr'], 'weight_decay': enc_wd_best},
             {'params': model.img_encoder.parameters(),  'lr': best['img_lr'],  'weight_decay': enc_wd_best},
             {'params': list(model.text_proj.parameters()) + list(model.img_proj.parameters()),
              'lr': best['proj_lr'], 'weight_decay': head_wd_best}
-        ])
+        ]
+        if getattr(args, 'learn_tau', True):
+            final_param_groups.append({'params': [model.log_tau], 'lr': args.temp_lr, 'weight_decay': 0.0})
+        optimizer = AdamW(final_param_groups)
         # 中文说明：重建按步 warmup+cosine 调度器（与最佳超参对应的DataLoader步数）
         steps_per_epoch = max(1, len(train_dl))
         total_steps = steps_per_epoch * args.epochs
-        warmup_steps = max(1, int(total_steps * args.warmup_ratio))
+        # 中文说明：最终训练同样优先使用固定 warmup 步数；否则回退到比例配置
+        warmup_steps_cfg = int(getattr(args, 'warmup_steps', 0))
+        warmup_steps = warmup_steps_cfg if warmup_steps_cfg > 0 else max(1, int(total_steps * args.warmup_ratio))
         from torch.optim.lr_scheduler import LinearLR, SequentialLR, CosineAnnealingLR
-        warmup = LinearLR(optimizer, start_factor=1e-3, end_factor=1.0, total_iters=warmup_steps)
-        cosine = CosineAnnealingLR(
-            optimizer,
-            T_max=max(1, int((total_steps - warmup_steps) * 1.5)),  # 中文说明：扩展余弦总步数×1.5
-            eta_min=eta_min
-        )
+        warmup = LinearLR(optimizer, start_factor=0.01, end_factor=1.0, total_iters=warmup_steps)
+        # 中文说明：最终训练同样采用动态 T_max，确保余弦退火覆盖整个训练后半段
+        t_max = max(1, total_steps - warmup_steps)
+        print(f"[lr-schedule-final] steps_per_epoch={steps_per_epoch} total_steps={total_steps} warmup_steps={warmup_steps} cosine_T_max={t_max}")
+        cosine = CosineAnnealingLR(optimizer, T_max=t_max, eta_min=eta_min)
         scheduler = SequentialLR(optimizer, schedulers=[warmup, cosine], milestones=[warmup_steps])
         # 若trial包含冻结轮数则应用到完整训练
         if 'warmup_freeze_epochs' in best:
@@ -574,6 +701,8 @@ def main():
         # 完整训练并保存best/last与最终权重（按 Top-1 衡量）
         last_acc = 0.0  # 中文说明：记录最后一次Top-1，用于70轮决策
         for epoch in range(start_epoch, args.epochs):
+            # 中文说明：打印当前 epoch 进度
+            print(f"===== Epoch {epoch + 1}/{args.epochs} =====")
             # 中文说明：检索任务取消冻结阶段，始终端到端训练
             for p in model.text_encoder.parameters():
                 p.requires_grad = True
@@ -586,17 +715,28 @@ def main():
             except Exception:
                 pass
             # 中文说明：每轮重建一次全局原型库（注入图片增强多样性）
-            prototypes = build_emoji_prototypes(model, ds, device, use_amp=enable_amp)
+            prototypes_train = build_emoji_prototypes(model, ds, device, use_amp=enable_amp, mode='train')
             # 中文说明：按步调度器在训练函数内部推进，无需此处调用 step()
             loss = train_one_epoch_retrieval(
-                model, train_dl, optimizer, device, prototypes,
+                model, train_dl, optimizer, device, prototypes_train,
                 use_amp=enable_amp, scheduler=scheduler, debug_grad=args.debug_grad,
-                mix_weights=(1.0, 0.3), tri_margin=0.2, top_k=10
+                mix_weights=(0.9, 0.4), tri_margin=0.5, top_k=10
             )
             # 评估 Top-1/Top-5
+            # 中文说明：打印评估原型的前5个ID以确认是否“未被固化”（顺序应稳定）
+            proto_ids = [ds.emoji_id_of_path[p] for p in ds.emoji_paths]
+            # 中文说明：路径→名称反转并去括号，生成类别名序列用于评估打印
+            name_by_path = {v: k for k, v in ds.emoji_map_by_name.items()}
+            def _to_name(p):
+                n = name_by_path.get(p, '')
+                if isinstance(n, str) and len(n) >= 2 and n[0] == '[' and n[-1] == ']':
+                    return n[1:-1]
+                return n or None
+            class_names = [_to_name(p) for p in ds.emoji_paths]
+            prototypes_eval = build_emoji_prototypes(model, ds, device, use_amp=enable_amp, mode='eval')
             metrics = eval_topk_accuracy(
-                model, val_dl if val_dl is not None else train_dl, device, prototypes,
-                use_amp=enable_amp, top_k=(1, 5)
+                model, eval_dl, device, prototypes_eval,
+                use_amp=enable_amp, top_k=(1, 5), proto_ids=proto_ids, class_names=class_names
             )
             acc = float(metrics.get('top1', 0.0))
             last_acc = acc  # 中文说明：更新最后一次Top-1
@@ -605,16 +745,16 @@ def main():
                 current_tau = float(torch.exp(model.log_tau).item())
             except Exception:
                 current_tau = float('nan')
-            print(f"epoch={epoch} loss={loss:.4f} top1={acc:.4f} top5={metrics.get('top5', 0.0):.4f} tau={current_tau:.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
-            # ===== Checkpoint 1：第50轮决策 =====
-            if (epoch + 1) == 50:
+            # 中文说明：去掉日志中的 epoch 字段，仅保留顶部 "===== Epoch x/y =====" 作为唯一轮次指示
+            print(f"loss={loss:.4f} top1={acc:.4f} top5={metrics.get('top5', 0.0):.4f} tau={current_tau:.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
+            # ===== Checkpoint 1：第45轮决策 =====
+            if (epoch + 1) == 45:
                 if acc > 0.25 and loss < 3.5:
-                    print("[checkpoint-50] 指标良好：继续训练到70。")
+                    print("[checkpoint-45] 指标良好：继续训练到70。")
                 elif acc < 0.20 or loss > 4.0:
-                    print("[checkpoint-50] 指标低/损失高：提前终止训练，请检查文本增强或温度设置。")
-                    break
+                    print("[checkpoint-45] 指标低/损失高：提前终止训练，请检查文本增强或温度设置。")
                 else:
-                    print("[checkpoint-50] 指标一般：继续到70，但不建议额外续训。")
+                    print("[checkpoint-45] 指标一般：继续到70，但不建议额外续训。")
             save_checkpoint(last_path, model, optimizer, epoch + 1, best_metric)
             if acc >= best_metric:
                 best_metric = acc
@@ -628,18 +768,30 @@ def main():
             print(f"[checkpoint-70] Top-1={final_acc:.4f}，计划额外微调 {more} epoch（监控过拟合）。")
             drop_patience = 0
             for e2 in range(args.epochs, args.epochs + more):
-                prototypes = build_emoji_prototypes(model, ds, device, use_amp=enable_amp)
+                prototypes_train = build_emoji_prototypes(model, ds, device, use_amp=enable_amp, mode='train')
                 loss2 = train_one_epoch_retrieval(
-                    model, train_dl, optimizer, device, prototypes,
+                    model, train_dl, optimizer, device, prototypes_train,
                     use_amp=enable_amp, scheduler=None, debug_grad=args.debug_grad,
-                    mix_weights=(1.0, 0.3), tri_margin=0.2, top_k=10
+                    mix_weights=(0.9, 0.4), tri_margin=0.5, top_k=10
                 )
+                # 中文说明：打印评估原型的前5个ID以确认是否“未被固化”（顺序应稳定）
+                proto_ids = [ds.emoji_id_of_path[p] for p in ds.emoji_paths]
+                # 中文说明：路径→名称反转并去括号，生成类别名序列用于评估打印
+                name_by_path = {v: k for k, v in ds.emoji_map_by_name.items()}
+                def _to_name(p):
+                    n = name_by_path.get(p, '')
+                    if isinstance(n, str) and len(n) >= 2 and n[0] == '[' and n[-1] == ']':
+                        return n[1:-1]
+                    return n or None
+                class_names = [_to_name(p) for p in ds.emoji_paths]
+                prototypes_eval = build_emoji_prototypes(model, ds, device, use_amp=enable_amp, mode='eval')
                 metrics2 = eval_topk_accuracy(
-                    model, val_dl if val_dl is not None else train_dl, device, prototypes,
-                    use_amp=enable_amp, top_k=(1, 5)
+                    model, eval_dl, device, prototypes_eval,
+                    use_amp=enable_amp, top_k=(1, 5), proto_ids=proto_ids, class_names=class_names
                 )
                 acc2 = float(metrics2.get('top1', 0.0))
-                print(f"epoch={e2} loss={loss2:.4f} top1={acc2:.4f} top5={metrics2.get('top5', 0.0):.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
+                # 中文说明：去掉日志中的 epoch 字段，保持与顶部进度打印一致，只显示指标
+                print(f"loss={loss2:.4f} top1={acc2:.4f} top5={metrics2.get('top5', 0.0):.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
                 save_checkpoint(last_path, model, optimizer, e2, best_metric)
                 if acc2 >= best_metric:
                     best_metric = acc2
@@ -663,22 +815,157 @@ def main():
         raw_model_path = os.path.join(args.save_dir, 'text_emoji_clip_roberta_efficientnetlite0.pt')
         torch.save(model.state_dict(), raw_model_path)
         print(f"[info] 预训练完成，模型权重已保存：{raw_model_path}")
+        try:
+            prototypes_eval = build_emoji_prototypes(model, ds, device, use_amp=enable_amp, mode='eval')
+            name_by_path = {v: k for k, v in ds.emoji_map_by_name.items()}
+            def _to_name(p):
+                n = name_by_path.get(p, '')
+                if isinstance(n, str) and len(n) >= 2 and n[0] == '[' and n[-1] == ']':
+                    return n[1:-1]
+                return n or None
+            class_names = [_to_name(p) for p in ds.emoji_paths]
+            metrics_last = eval_topk_accuracy(
+                model, eval_dl, device, prototypes_eval,
+                use_amp=enable_amp, top_k=(1, 5), proto_ids=[ds.emoji_id_of_path[p] for p in ds.emoji_paths], class_names=class_names
+            )
+            scatter_path = os.path.join(args.save_dir, 'per_class_scatter.png')
+            plot_data_vs_accuracy(metrics_last.get('per_class_total', []), metrics_last.get('per_class_hit', []), class_names, scatter_path)
+            try:
+                from datetime import datetime
+                log_path = os.path.join(args.save_dir, 'eval_summary.txt')
+                top1 = float(metrics_last.get('top1', 0.0))
+                top5 = float(metrics_last.get('top5', 0.0))
+                pct = lambda x: f"{x*100:.2f}%"
+                totals = metrics_last.get('per_class_total', []) or []
+                hits = metrics_last.get('per_class_hit', []) or []
+                names = class_names or []
+                valid = [i for i,n in enumerate(totals) if int(n) > 0]
+                accs = [(i, (float(hits[i]) / float(totals[i])) if totals[i] > 0 else float('nan')) for i in valid]
+                best = [i for i,_ in sorted(accs, key=lambda t: t[1], reverse=True)[:5]]
+                worst = [i for i,_ in sorted(accs, key=lambda t: t[1])[:5]]
+                uniq = sorted(set(int(n) for n in totals if int(n) > 0))
+                per_class_target = uniq[0] if len(uniq) == 1 else None
+                lines = []
+                lines.append(f"时间: {datetime.now().isoformat(timespec='seconds')}")
+                lines.append(f"整体: Top-1={pct(top1)} Top-5={pct(top5)}")
+                lines.append(f"评估: 类别数={len(totals)} 总样本={sum(int(n) for n in totals)} 每类目标={per_class_target if per_class_target is not None else '不均匀'}")
+                lines.append(f"散点图: {scatter_path}")
+                lines.append("")
+                lines.append("前5优秀:")
+                for i in best:
+                    nm = (names[i] if i < len(names) and names[i] else f"id={i}")
+                    n = int(totals[i])
+                    a = (float(hits[i]) / float(n)) if n > 0 else 0.0
+                    lines.append(f"  ✓ {nm}: Top-1={pct(a)} (n={n})")
+                lines.append("后5薄弱:")
+                for i in worst:
+                    nm = (names[i] if i < len(names) and names[i] else f"id={i}")
+                    n = int(totals[i])
+                    a = (float(hits[i]) / float(n)) if n > 0 else 0.0
+                    lines.append(f"  ✗ {nm}: Top-1={pct(a)} (n={n})")
+                pcht = metrics_last.get('per_class_hit_topk', {}) or {}
+                hit5 = pcht.get(5, [0] * len(totals))
+                acc_full = []
+                for i in valid:
+                    n = int(totals[i])
+                    a1 = (float(hits[i]) / float(n)) if n > 0 else 0.0
+                    a5 = (float(hit5[i]) / float(n)) if n > 0 else 0.0
+                    acc_full.append((i, a1, a5, n))
+                acc_full_sorted = sorted(acc_full, key=lambda t: t[1], reverse=True)
+                lines.append("")
+                lines.append("全部类别（按Top-1降序）：")
+                for i, a1, a5, n in acc_full_sorted:
+                    nm = (names[i] if i < len(names) and names[i] else f"id={i}")
+                    lines.append(f"  {nm}: Top-1={pct(a1)} Top-5={pct(a5)} (n={n})")
+                ranks = metrics_last.get('per_class_rank_avg', []) or []
+                conf = metrics_last.get('confusion', []) or []
+                if ranks and conf:
+                    lines.append("")
+                    lines.append("每类平均排名与常见混淆：")
+                    for i, a1, a5, n in acc_full_sorted:
+                        nm = (names[i] if i < len(names) and names[i] else f"id={i}")
+                        r = ranks[i] if i < len(ranks) else float('nan')
+                        mc = None
+                        if i < len(conf):
+                            row = conf[i]
+                            if isinstance(row, list) and len(row) > 0:
+                                import numpy as np
+                                arr = np.array(row)
+                                top_k_idx = arr.argsort()[::-1]
+                                # 取除去自身后的第一混淆目标
+                                for j in top_k_idx:
+                                    if int(j) != int(i):
+                                        mc = j
+                                        break
+                        mc_nm = (names[mc] if mc is not None and mc < len(names) and names[mc] else (f"id={mc}" if mc is not None else "-"))
+                        lines.append(f"  {nm}: 平均排名={r:.2f} 常见混淆→{mc_nm}")
+                    try:
+                        pred_counts = []
+                        for j in range(len(names)):
+                            c = 0
+                            for i in range(len(conf)):
+                                row = conf[i]
+                                if isinstance(row, list) and j < len(row):
+                                    c += int(row[j])
+                            pred_counts.append(c)
+                        total_pred = sum(pred_counts)
+                        order = sorted(range(len(pred_counts)), key=lambda k: pred_counts[k], reverse=True)
+                        lines.append("")
+                        lines.append("Top-1预测分布（降序）：")
+                        for k in order:
+                            if total_pred <= 0:
+                                break
+                            nm2 = (names[k] if k < len(names) and names[k] else f"id={k}")
+                            share = (pred_counts[k] / total_pred) if total_pred > 0 else 0.0
+                            lines.append(f"  {nm2}: {pred_counts[k]} ({share*100:.2f}%)")
+                        if total_pred > 0 and pred_counts[order[0]] / total_pred > 0.5:
+                            nm_top = (names[order[0]] if order[0] < len(names) and names[order[0]] else f"id={order[0]}")
+                            lines.append(f"[warn] Top-1预测集中：{nm_top} 占比 {pred_counts[order[0]]/total_pred*100:.2f}%")
+                    except Exception:
+                        pass
+                bins = metrics_last.get('bins', []) or []
+                if bins:
+                    lines.append("")
+                    lines.append("样本量分桶:")
+                    for item in bins:
+                        ex_str = "、".join(item.get('examples', []) or []) or "-"
+                        lines.append(f" {item.get('label','-')},{item.get('class_count',0)},{item.get('avg_top1',0.0)*100:.1f}%,{ex_str}")
+                with open(log_path, 'w', encoding='utf-8') as f:
+                    f.write("\n".join(lines))
+                print(f"[log] 评估摘要已保存: {log_path}")
+            except Exception:
+                pass
+        except Exception:
+            pass
     else:
         # 常规训练：检索任务（Top-1/Top-5）
         last_acc = 0.0  # 中文说明：记录最后一次Top-1，用于70轮决策
         for epoch in range(start_epoch, args.epochs):
+            # 中文说明：打印当前 epoch 进度
+            print(f"===== Epoch {epoch + 1}/{args.epochs} =====")
             # 中文说明：每轮重建一次全局原型库，用于CE分类与Triplet排序
-            prototypes = build_emoji_prototypes(model, ds, device, use_amp=enable_amp)
+            prototypes_train = build_emoji_prototypes(model, ds, device, use_amp=enable_amp, mode='train')
             # 中文说明：训练阶段启用AMP（若use_amp=True）；调度器在函数内推进
             loss = train_one_epoch_retrieval(
-                model, train_dl, optimizer, device, prototypes,
+                model, train_dl, optimizer, device, prototypes_train,
                 use_amp=enable_amp, scheduler=scheduler, debug_grad=args.debug_grad,
                 mix_weights=(1.0, 0.3), tri_margin=0.2, top_k=10
             )
             # 评估阶段：Top-1/Top-5
+            # 中文说明：打印评估原型的前5个ID以确认是否“未被固化”（顺序应稳定）
+            proto_ids = [ds.emoji_id_of_path[p] for p in ds.emoji_paths]
+            # 中文说明：路径→名称反转并去括号，生成类别名序列用于评估打印
+            name_by_path = {v: k for k, v in ds.emoji_map_by_name.items()}
+            def _to_name(p):
+                n = name_by_path.get(p, '')
+                if isinstance(n, str) and len(n) >= 2 and n[0] == '[' and n[-1] == ']':
+                    return n[1:-1]
+                return n or None
+            class_names = [_to_name(p) for p in ds.emoji_paths]
+            prototypes_eval = build_emoji_prototypes(model, ds, device, use_amp=enable_amp, mode='eval')
             metrics = eval_topk_accuracy(
-                model, val_dl if val_dl is not None else train_dl, device, prototypes,
-                use_amp=enable_amp, top_k=(1, 5)
+                model, eval_dl, device, prototypes_eval,
+                use_amp=enable_amp, top_k=(1, 5), proto_ids=proto_ids, class_names=class_names
             )
             acc = float(metrics.get('top1', 0.0))
             last_acc = acc  # 中文说明：更新最后一次Top-1
@@ -686,16 +973,16 @@ def main():
                 current_tau = float(torch.exp(model.log_tau).item())
             except Exception:
                 current_tau = float('nan')
-            print(f"epoch={epoch} loss={loss:.4f} top1={acc:.4f} top5={metrics.get('top5', 0.0):.4f} tau={current_tau:.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
-            # ===== Checkpoint 1：第50轮决策 =====
-            if (epoch + 1) == 50:
+            # 中文说明：日志不再重复显示 epoch，避免与顶部进度打印产生重复与混淆
+            print(f"loss={loss:.4f} top1={acc:.4f} top5={metrics.get('top5', 0.0):.4f} tau={current_tau:.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
+            # ===== Checkpoint 1：第45轮决策 =====
+            if (epoch + 1) == 45:
                 if acc > 0.25 and loss < 3.5:
-                    print("[checkpoint-50] 指标良好：继续训练到70。")
+                    print("[checkpoint-45] 指标良好：继续训练到70。")
                 elif acc < 0.20 or loss > 4.0:
-                    print("[checkpoint-50] 指标低/损失高：提前终止训练，请检查文本增强或温度设置。")
-                    break
+                    print("[checkpoint-45] 指标低/损失高：提前终止训练，请检查文本增强或温度设置。")
                 else:
-                    print("[checkpoint-50] 指标一般：继续到70，但不建议额外续训。")
+                    print("[checkpoint-45] 指标一般：继续到70，但不建议额外续训。")
 
             # 保存last检查点（每轮保存），避免中断丢失进度
             save_checkpoint(last_path, model, optimizer, epoch + 1, best_metric)
@@ -713,18 +1000,30 @@ def main():
             print(f"[checkpoint-70] Top-1={final_acc:.4f}，计划额外微调 {more} epoch（监控过拟合）。")
             drop_patience = 0
             for e2 in range(args.epochs, args.epochs + more):
-                prototypes = build_emoji_prototypes(model, ds, device, use_amp=enable_amp)
+                prototypes_train = build_emoji_prototypes(model, ds, device, use_amp=enable_amp, mode='train')
                 loss2 = train_one_epoch_retrieval(
-                    model, train_dl, optimizer, device, prototypes,
+                    model, train_dl, optimizer, device, prototypes_train,
                     use_amp=enable_amp, scheduler=None, debug_grad=args.debug_grad,
                     mix_weights=(1.0, 0.3), tri_margin=0.2, top_k=10
                 )
+                # 中文说明：打印评估原型的前5个ID以确认是否“未被固化”（顺序应稳定）
+                proto_ids = [ds.emoji_id_of_path[p] for p in ds.emoji_paths]
+                # 中文说明：路径→名称反转并去括号，生成类别名序列用于评估打印
+                name_by_path = {v: k for k, v in ds.emoji_map_by_name.items()}
+                def _to_name(p):
+                    n = name_by_path.get(p, '')
+                    if isinstance(n, str) and len(n) >= 2 and n[0] == '[' and n[-1] == ']':
+                        return n[1:-1]
+                    return n or None
+                class_names = [_to_name(p) for p in ds.emoji_paths]
+                prototypes_eval = build_emoji_prototypes(model, ds, device, use_amp=enable_amp, mode='eval')
                 metrics2 = eval_topk_accuracy(
-                    model, val_dl if val_dl is not None else train_dl, device, prototypes,
-                    use_amp=enable_amp, top_k=(1, 5)
+                    model, eval_dl, device, prototypes_eval,
+                    use_amp=enable_amp, top_k=(1, 5), proto_ids=proto_ids, class_names=class_names
                 )
                 acc2 = float(metrics2.get('top1', 0.0))
-                print(f"epoch={e2} loss={loss2:.4f} top1={acc2:.4f} top5={metrics2.get('top5', 0.0):.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
+                # 中文说明：统一移除 epoch 字段，确保只有顶部进度行承担轮次显示职责
+                print(f"loss={loss2:.4f} top1={acc2:.4f} top5={metrics2.get('top5', 0.0):.4f} lr={[g['lr'] for g in optimizer.param_groups]}")
                 save_checkpoint(last_path, model, optimizer, e2, best_metric)
                 if acc2 >= best_metric:
                     best_metric = acc2
@@ -749,6 +1048,127 @@ def main():
         raw_model_path = os.path.join(args.save_dir, 'text_emoji_clip_roberta_efficientnetlite0.pt')
         torch.save(model.state_dict(), raw_model_path)
         print(f"[info] 预训练完成，模型权重已保存：{raw_model_path}")
+        try:
+            prototypes_eval = build_emoji_prototypes(model, ds, device, use_amp=enable_amp, mode='eval')
+            name_by_path = {v: k for k, v in ds.emoji_map_by_name.items()}
+            def _to_name(p):
+                n = name_by_path.get(p, '')
+                if isinstance(n, str) and len(n) >= 2 and n[0] == '[' and n[-1] == ']':
+                    return n[1:-1]
+                return n or None
+            class_names = [_to_name(p) for p in ds.emoji_paths]
+            metrics_last = eval_topk_accuracy(
+                model, eval_dl, device, prototypes_eval,
+                use_amp=enable_amp, top_k=(1, 5), proto_ids=[ds.emoji_id_of_path[p] for p in ds.emoji_paths], class_names=class_names
+            )
+            scatter_path = os.path.join(args.save_dir, 'per_class_scatter.png')
+            plot_data_vs_accuracy(metrics_last.get('per_class_total', []), metrics_last.get('per_class_hit', []), class_names, scatter_path)
+            try:
+                from datetime import datetime
+                log_path = os.path.join(args.save_dir, 'eval_summary.txt')
+                top1 = float(metrics_last.get('top1', 0.0))
+                top5 = float(metrics_last.get('top5', 0.0))
+                pct = lambda x: f"{x*100:.2f}%"
+                totals = metrics_last.get('per_class_total', []) or []
+                hits = metrics_last.get('per_class_hit', []) or []
+                names = class_names or []
+                valid = [i for i,n in enumerate(totals) if int(n) > 0]
+                accs = [(i, (float(hits[i]) / float(totals[i])) if totals[i] > 0 else float('nan')) for i in valid]
+                best = [i for i,_ in sorted(accs, key=lambda t: t[1], reverse=True)[:5]]
+                worst = [i for i,_ in sorted(accs, key=lambda t: t[1])[:5]]
+                uniq = sorted(set(int(n) for n in totals if int(n) > 0))
+                per_class_target = uniq[0] if len(uniq) == 1 else None
+                lines = []
+                lines.append(f"时间: {datetime.now().isoformat(timespec='seconds')}")
+                lines.append(f"整体: Top-1={pct(top1)} Top-5={pct(top5)}")
+                lines.append(f"评估: 类别数={len(totals)} 总样本={sum(int(n) for n in totals)} 每类目标={per_class_target if per_class_target is not None else '不均匀'}")
+                lines.append(f"散点图: {scatter_path}")
+                lines.append("")
+                lines.append("前5优秀:")
+                for i in best:
+                    nm = (names[i] if i < len(names) and names[i] else f"id={i}")
+                    n = int(totals[i])
+                    a = (float(hits[i]) / float(n)) if n > 0 else 0.0
+                    lines.append(f"  ✓ {nm}: Top-1={pct(a)} (n={n})")
+                lines.append("后5薄弱:")
+                for i in worst:
+                    nm = (names[i] if i < len(names) and names[i] else f"id={i}")
+                    n = int(totals[i])
+                    a = (float(hits[i]) / float(n)) if n > 0 else 0.0
+                    lines.append(f"  ✗ {nm}: Top-1={pct(a)} (n={n})")
+                pcht = metrics_last.get('per_class_hit_topk', {}) or {}
+                hit5 = pcht.get(5, [0] * len(totals))
+                acc_full = []
+                for i in valid:
+                    n = int(totals[i])
+                    a1 = (float(hits[i]) / float(n)) if n > 0 else 0.0
+                    a5 = (float(hit5[i]) / float(n)) if n > 0 else 0.0
+                    acc_full.append((i, a1, a5, n))
+                acc_full_sorted = sorted(acc_full, key=lambda t: t[1], reverse=True)
+                lines.append("")
+                lines.append("全部类别（按Top-1降序）：")
+                for i, a1, a5, n in acc_full_sorted:
+                    nm = (names[i] if i < len(names) and names[i] else f"id={i}")
+                    lines.append(f"  {nm}: Top-1={pct(a1)} Top-5={pct(a5)} (n={n})")
+                ranks = metrics_last.get('per_class_rank_avg', []) or []
+                conf = metrics_last.get('confusion', []) or []
+                if ranks and conf:
+                    lines.append("")
+                    lines.append("每类平均排名与常见混淆：")
+                    for i, a1, a5, n in acc_full_sorted:
+                        nm = (names[i] if i < len(names) and names[i] else f"id={i}")
+                        r = ranks[i] if i < len(ranks) else float('nan')
+                        mc = None
+                        if i < len(conf):
+                            row = conf[i]
+                            if isinstance(row, list) and len(row) > 0:
+                                import numpy as np
+                                arr = np.array(row)
+                                top_k_idx = arr.argsort()[::-1]
+                                for j in top_k_idx:
+                                    if int(j) != int(i):
+                                        mc = j
+                                        break
+                        mc_nm = (names[mc] if mc is not None and mc < len(names) and names[mc] else (f"id={mc}" if mc is not None else "-"))
+                        lines.append(f"  {nm}: 平均排名={r:.2f} 常见混淆→{mc_nm}")
+                    try:
+                        pred_counts = []
+                        for j in range(len(names)):
+                            c = 0
+                            for i in range(len(conf)):
+                                row = conf[i]
+                                if isinstance(row, list) and j < len(row):
+                                    c += int(row[j])
+                            pred_counts.append(c)
+                        total_pred = sum(pred_counts)
+                        order = sorted(range(len(pred_counts)), key=lambda k: pred_counts[k], reverse=True)
+                        lines.append("")
+                        lines.append("Top-1预测分布（降序）：")
+                        for k in order:
+                            if total_pred <= 0:
+                                break
+                            nm2 = (names[k] if k < len(names) and names[k] else f"id={k}")
+                            share = (pred_counts[k] / total_pred) if total_pred > 0 else 0.0
+                            lines.append(f"  {nm2}: {pred_counts[k]} ({share*100:.2f}%)")
+                        if total_pred > 0 and pred_counts[order[0]] / total_pred > 0.5:
+                            nm_top = (names[order[0]] if order[0] < len(names) and names[order[0]] else f"id={order[0]}")
+                            lines.append(f"[warn] Top-1预测集中：{nm_top} 占比 {pred_counts[order[0]]/total_pred*100:.2f}%")
+                    except Exception:
+                        pass
+                bins = metrics_last.get('bins', []) or []
+                if bins:
+                    lines.append("")
+                    lines.append("样本量分桶:")
+                    for item in bins:
+                        ex_str = "、".join(item.get('examples', []) or []) or "-"
+                        lines.append(f" {item.get('label','-')},{item.get('class_count',0)},{item.get('avg_top1',0.0)*100:.1f}%,{ex_str}")
+                with open(log_path, 'w', encoding='utf-8') as f:
+                    f.write("\n".join(lines))
+                print(f"[log] 评估摘要已保存: {log_path}")
+            except Exception:
+                pass
+        except Exception:
+            pass
 
 
 if __name__ == '__main__':

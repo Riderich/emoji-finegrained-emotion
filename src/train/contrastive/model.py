@@ -11,16 +11,18 @@ from modelscope.hub.snapshot_download import snapshot_download
 class ProjectionHead(nn.Module):
     def __init__(self, in_dim, out_dim=256):
         # 简单MLP投影：编码器输出 → 对齐空间；并做L2归一化
+        # 中文说明：使用 GELU 替代 ReLU，避免 "Dead ReLU" 导致输出为0进而引发 Normalization 梯度爆炸
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(in_dim, out_dim),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Linear(out_dim, out_dim)
         )
 
     def forward(self, x):
         z = self.net(x)
-        return nn.functional.normalize(z, dim=-1)  # 归一化有助于稳定对比学习
+        # 中文说明：增加 eps 防止零向量导致除零异常
+        return nn.functional.normalize(z, dim=-1, eps=1e-6)
 
 
 class MeanPooler(nn.Module):
@@ -116,11 +118,15 @@ class TextEmojiContrastive(nn.Module):
 
         # 中文说明：尝试用 ModelScope 拉取 timm/efficientnet_lite0.ra_in1k 的本地快照（缓存到项目内）
         img_checkpoint = None
-        try:
-            ms_vision_dir = snapshot_download('timm/efficientnet_lite0.ra_in1k', cache_dir=str(ms_cache_dir))
-            img_checkpoint = _find_timm_checkpoint(ms_vision_dir)
-        except Exception as e:
-            print(f"[warn] ModelScope 获取 EfficientNet-Lite0 权重失败，将使用随机初始化。错误: {e}")
+        env_cp = os.environ.get('EFFICIENTNET_LITE0_CP', '')
+        if env_cp and os.path.exists(env_cp):
+            img_checkpoint = env_cp
+        else:
+            try:
+                ms_vision_dir = snapshot_download('timm/efficientnet_lite0.ra_in1k', cache_dir=str(ms_cache_dir))
+                img_checkpoint = _find_timm_checkpoint(ms_vision_dir)
+            except Exception as e:
+                print(f"[warn] ModelScope 获取 EfficientNet-Lite0 权重失败，将使用随机初始化。错误: {e}")
 
         if img_checkpoint and os.path.exists(img_checkpoint):
             # 中文说明：不使用 timm 的 checkpoint_path，改为手动加载并 strict=False

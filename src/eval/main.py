@@ -142,7 +142,16 @@ def main() -> None:
     prototypes = build_emoji_prototypes(model, ds, device, use_amp=enable_amp)
 
     # 计算 Top-1 / Top-5
-    metrics = eval_topk_accuracy(model, dl, device, prototypes, use_amp=enable_amp, top_k=(1, 5))
+    # 中文说明：反转路径→名称映射，去除方括号，生成类别名称序列以便按名称打印类别表现
+    name_by_path = {v: k for k, v in ds.emoji_map_by_name.items()}  # 路径→表情名
+    def _to_name(p: str):
+        # 去括号：如 "[笑哭]" → "笑哭"；若无映射则返回 None
+        n = name_by_path.get(p, '')
+        if isinstance(n, str) and len(n) >= 2 and n[0] == '[' and n[-1] == ']':
+            return n[1:-1]
+        return n or None
+    class_names = [_to_name(p) for p in ds.emoji_paths]
+    metrics = eval_topk_accuracy(model, dl, device, prototypes, use_amp=enable_amp, top_k=(1, 5), class_names=class_names)
     print(f"[Eval] Top-1={metrics.get('top1', 0.0):.4f} Top-5={metrics.get('top5', 0.0):.4f}")
 
 

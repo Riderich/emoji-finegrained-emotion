@@ -273,33 +273,35 @@ class TextEmojiDataset(Dataset):
         for r in self.rows:
             r['emoji_id'] = self.emoji_id_of_path[r['image_path']]  # 为每条样本填充类别ID
 
-        # 强化图片增强：提升特征熵，避免表示崩溃
-        # 中文说明：采用随机裁剪/翻转/颜色抖动/模糊/灰度扰动等增强；
-        # 对于Emoji图像，增强幅度控制在合理范围，尽量不破坏语义，但提高外观多样性。
-        self.img_tf = transforms.Compose([
-            # 随机裁剪到 224×224，并允许一定缩放与宽高比变化（提升视角多样性）
-            transforms.RandomResizedCrop(
-                224,
-                scale=(0.5, 1.0),          # 中文说明：裁剪尺度范围（保留50%~100%内容）
-                ratio=(0.75, 1.33)         # 宽高比扰动，避免特征过于集中
-            ),
-            # 随机水平翻转（部分emoji翻转语义不变，增强鲁棒性）
+        # 训练用图像增强管线
+        self.img_tf_train = transforms.Compose([
+            transforms.RandomResizedCrop(224, scale=(0.5, 1.0), ratio=(0.75, 1.33)),
             transforms.RandomHorizontalFlip(p=0.5),
-            # 颜色抖动（亮度/对比度/饱和度/色相），增强光照与风格变化的适应性
             transforms.ColorJitter(0.4, 0.4, 0.4, 0.1),
-            # 轻度高斯模糊，模拟拍摄/压缩导致的细节损失
             transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0)),
-            # 小概率转为灰度，迫使网络降低对颜色的过拟合
             transforms.RandomGrayscale(p=0.05),
-            # 转张量与 ImageNet 归一化（对齐 EfficientNet-Lite0 预训练分布）
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD)
         ])
+        # 评估用图像变换管线（确定性）
+        self.img_tf_eval = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD)
+        ])
+        # 兼容旧代码引用
+        self.img_tf = self.img_tf_train
+        # 记录最大文本长度（token级）
         self.max_len = max_len
-
         # 文本动态增强设置（B站风格）：在 __getitem__ 中以一定概率应用
         # 中文说明：模拟口语化/打字习惯，如“哈哈哈”“啊呀吧嘛”，提升文本特征的鲁棒性。
-        self.text_aug_prob = 0.3  # 30% 概率进行一次增强；可在后续需要时提升
+        self.text_aug_prob = 0.0  # 关闭文本增强，先提升排序稳定性；需要时再开启
+
+    def get_image_transform(self, mode: str = 'train'):
+        # 根据模式返回对应的图像变换管线（训练/评估）
+        tf = self.img_tf_train if mode == 'train' else self.img_tf_eval
+        return tf
 
     def __len__(self):
         # 返回样本总数
@@ -330,7 +332,7 @@ class TextEmojiDataset(Dataset):
             padding='max_length',
             return_tensors='pt'
         )
-        img_t = self.img_tf(img)
+        img_t = self.get_image_transform('train')(img)
         return {
             'input_ids': toks['input_ids'].squeeze(0),           # 文本token id
             'attention_mask': toks['attention_mask'].squeeze(0), # 注意力mask
