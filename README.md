@@ -1,6 +1,6 @@
-# Emoji Fine-Grained Emotion Recognition (CN)
+# Bi-modal Encoder Aligning Model (BEAM) for Fine-Grained Emoji Emotion Recognition
 
-本仓库用于实现“视觉-语义-文本”三模态融合的中文细粒度Emoji情绪识别项目。包含数据目录结构、环境配置、基础脚本与最小代码骨架。
+本项目旨在解决社交媒体中高度重复多模态数据（特别是Bilibili评论中极端视觉重复）带来的学习挑战。我们发现标准对比学习在此类条件下容易崩溃。为此，我们提出了**Bi-modal Encoder Aligning Model (BEAM)**，它采用了一种新颖的混合损失函数来规避这一限制。BEAM 在高频表情符号上实现了近乎完美的准确率（98.29% Top-1），为垂直社交媒体任务提供了一个有效的框架，并为对比学习在嘈杂、非独立同分布的真实世界数据中的局限性和适应性提供了清晰的案例研究。
 
 ## 目录结构
 - `data/emoji_images/` 多平台Emoji图像（原图与增强样本）
